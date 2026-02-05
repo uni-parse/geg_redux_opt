@@ -3,15 +3,16 @@
     https://nodejs.org/en/download/current
 
 # usage:
-  - clone the git repo: git clone ""
-  - adjust \uniparse\resize.js as you wish
-  - open terminal on the extraction folder
-  - enter the command:
-    node index.js "path\to\Mods\GEG Redux\Data\"
+  - clone the git repo:
+    git clone "https://github.com/uni-parse/geg_redux_opt"
+    cd geg_redux_opt
+  - adjust resize.js as you wish
+  - start the script:
+    node index.js "path/to/Mods/GEG Redux/Data/"
   - wait (it took ~20min on ssd & cpu i5-2450m 2core/4thread)
   - backup will be generated (you can remove it if you want):
-     \Mods\GEG Redux\Data\_backup\MEDIA
-     \Mods\GEG Redux\Data\_backup\ACTORS\ITEMS
+     /Mods/GEG Redux/Data/_backup/MEDIA
+     /Mods/GEG Redux/Data/_backup/ACTORS/ITEMS
   - done
 
 # compress Imgs process:
