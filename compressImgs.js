@@ -5,7 +5,7 @@
  * rename back to org filename (compatibility hack)
  */
 
-/** config files who contine immgas paths
+/** config files who contine imgs paths
   *.act, *.ACT, *.ACT.1, *.x, *.actx, *.ACTx, *.E5B, *.e5b, *.E6B, *.e6b, *.INI, *.ini, *.xml, *.lua, SOLDIEREPAULETS
 
   /CTORS/ITEMS/ *.act, *.ACT, *.ACT.1, *.x, *.actx, *.ACTx
