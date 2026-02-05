@@ -8,10 +8,10 @@
 /** config files who contine immgas paths
   *.act, *.ACT, *.ACT.1, *.x, *.actx, *.ACTx, *.E5B, *.e5b, *.E6B, *.e6b, *.INI, *.ini, *.xml, *.lua, SOLDIEREPAULETS
 
-  \ACTORS\ITEMS\ *.act, *.ACT, *.ACT.1, *.x, *.actx, *.ACTx
-  \HARDLIFE\Configs\dloob_decals.xml
-  \HARDLIFE\lua\items\tracers.lua
-  \INI\SOLDIEREPAULETS
+  /CTORS/ITEMS/ *.act, *.ACT, *.ACT.1, *.x, *.actx, *.ACTx
+  /ARDLIFE/Configs/dloob_decals.xml
+  /ARDLIFE/lua/items/tracers.lua
+  /NI/SOLDIEREPAULETS
  */
 
 const fs = require('node:fs/promises')
