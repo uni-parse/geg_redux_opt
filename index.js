@@ -119,6 +119,25 @@ async function main(basePath) {
         await removeDir(mediaTemp)
       }
     }
+
+    // ----------------------------------------
+    const renderedItemsPath = path.resolve(
+      basePath,
+      '..',
+      '..',
+      '..',
+      'RenderedItems'
+    )
+    if (await checkDir(renderedItemsPath)) {
+      await fs.rename(
+        renderedItemsPath,
+        `${renderedItemsPath}_backup`
+      )
+
+      console.log(
+        '\nRenamed "\\RenderedItems" to "\\RenderedItems_backup"\n'
+      )
+    }
   } catch (error) {
     console.error('❌ Fatal error in main:', error)
   } finally {
