@@ -239,7 +239,11 @@ async function compressImgs(
     tempRenamedImgs,
     CORES_LIMIT,
     async img => {
-      await fs.unlink(img.path)
+      const renamedPath = img.path.replace(
+        '.dds',
+        img.actualExt
+      )
+      await fs.unlink(renamedPath)
       return img
     }
   )
@@ -271,7 +275,7 @@ async function compressImgs(
     },
     (error, img) =>
       console.error(
-        `\n\n❌ Failed to get img status "${img.relPath}: ${error?.message}"`
+        `\n\n❌ Failed to get img status "${img.relPath}": ${error?.message}"`
       )
   )
 
