@@ -301,7 +301,7 @@ async function compressImgs(
       const { orgDuplicateImg } = img
 
       // update org status
-      const { size } = await fs.state(img.orgPath)
+      const { size } = await fs.stat(img.orgPath)
       img.size = size
       img.width = orgDuplicateImg.width
       img.height = orgDuplicateImg.height
