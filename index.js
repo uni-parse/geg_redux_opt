@@ -35,7 +35,7 @@ async function main(basePath) {
     if (!basePath || !(await checkDir(basePath))) {
       console.warn(
         'Invalid basePath\n' +
-          'Usage: node uniparse "path/to/Mods/GEG Redux/Data/"'
+          'Usage: node index.js "path/to/Mods/GEG Redux/Data/"'
       )
       return
     }
@@ -77,7 +77,7 @@ async function main(basePath) {
       console.warn(
         `invalid basePath "${basePath}" \n` +
           `the basePath should contain the sub paths "./MEDIA/" and "./ACTORS/ITEMS/" \n` +
-          'Usage: node uniparse "path/to/Mods/GEG Redux/Data/"'
+          'Usage: node index.js "path/to/Mods/GEG Redux/Data/"'
       )
 
       return
