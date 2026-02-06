@@ -22,6 +22,12 @@
      /Mods/GEG Redux/Data/_backup/ACTORS/ITEMS
   - done
 
+## Advice:
+  - delete "/RenderedItems/" directory
+    so engine generate new optimized textures cache
+    or else it will use old unOptimized textures cache
+    who will cause memory leak crash
+
 ## Compress Imgs process:
   - skip/copy small imgs & unsupported files (as .vtf)
   - rename misFormated & fix corrupt .dds (magick required it)
