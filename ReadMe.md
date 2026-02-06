@@ -13,7 +13,7 @@
   - or
     ```bash
     double click on: Run_GEG_Redux_Opt.bat
-    past: "path/to/Mods/GEG Redux/Data/"
+    paste: "path/to/Mods/GEG Redux/Data/"
     press: Enter
   - wait (it took ~20min on ssd & cpu i5-2450m 2core/4thread)
   - backup will be generated (you can remove it if you want):
