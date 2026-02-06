@@ -330,9 +330,14 @@ async function compressImgs(
   const saved = orgSize - newSize
   const savedPercent = Math.round((saved / orgSize) * 100)
 
+  const optedImgsLength = imgs.reduce(
+    (_, img) => _ + +img.isOpted,
+    0
+  )
+
   console.log(
     `\n${'═'.repeat(60)}\n` +
-      `⚡ Optimized: ${optedImgs.length} / ${imgs.length} files\n` +
+      `⚡ Optimized: ${optedImgsLength} / ${imgs.length} files\n` +
       `📊 Total Size: ${sizeToStr(orgSize)} → ${sizeToStr(
         newSize
       )}\n` +
