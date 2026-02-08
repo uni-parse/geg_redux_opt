@@ -131,13 +131,17 @@ async function main(basePath) {
     if (await checkDir(renderedItemsPath)) {
       await fs.rename(
         renderedItemsPath,
-        `${renderedItemsPath}_backup`
+        `${renderedItemsPath}_backup_${Date.now()}`
       )
 
       console.log(
         '\nRenamed "\\RenderedItems" to "\\RenderedItems_backup"\n'
       )
     }
+
+    // ----------------------------------------
+    const tempPath = path.resolve(basePath, '_temp')
+    if (await checkDir(tempPath)) await removeDir(tempPath)
   } catch (error) {
     console.error('❌ Fatal error in main:', error)
   } finally {
