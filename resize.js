@@ -1,14 +1,14 @@
 const path = require('node:path')
 
-  // adjust as you wish
-  const minDimension = 32
-  const maxDimension = 512
-  const percent = 60
+// adjust as you wish
+const minDimension = 32
+const maxDimension = 512
+const percent = 60
 
-  // add other names you don't want to resize
-  const exluded = [
-    'startgame', // Main Menu "/MEDIA/SPLASHES/startgame.tga"
-  ]
+// add other names you don't want to resize
+const exluded = [
+  'startgame', // Main Menu "/MEDIA/SPLASHES/startgame.tga"
+]
 
 // need tests to get the right resizes
 function getResize(img) {
@@ -35,7 +35,7 @@ function getResize(img) {
     canResize = false
   // skip small imgs
   else if (imgDimension <= minDimension) canResize = false
-  // resize large imgs to maxDimension or percent%
+  // resize/limit large imgs to maxDimension
   else if (imgDimension > maxDimension)
     resize = Math.min(
       maxDimension,
