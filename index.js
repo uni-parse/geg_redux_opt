@@ -65,8 +65,8 @@ async function main(basePath) {
 
     const isValidMediaSrc = await checkDir(mediaSrc)
     const isValidActSrc = await checkDir(actSrc)
-    let isValidMediaBackup = await checkDir(mediaBackup)
-    let isValidActBackup = await checkDir(actBackup)
+    const isValidMediaBackup = await checkDir(mediaBackup)
+    const isValidActBackup = await checkDir(actBackup)
 
     if (
       !isValidMediaSrc &&
