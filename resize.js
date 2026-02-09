@@ -29,7 +29,7 @@ function getResize(img) {
   // skip exluded imgs
   if (
     exluded
-      .map(p => path.basename(p).toLowerCase())
+      .map(p => path.basename(p, path.extname(p)).toLowerCase())
       .includes(basename.toLowerCase())
   )
     canResize = false
