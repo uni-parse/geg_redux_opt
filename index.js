@@ -121,6 +121,10 @@ async function main(basePath) {
     }
 
     // ----------------------------------------
+    const tempPath = path.resolve(basePath, '_temp')
+    if (await checkDir(tempPath)) await removeDir(tempPath)
+
+    // ----------------------------------------
     const renderedItemsPath = path.resolve(
       basePath,
       '..',
@@ -138,10 +142,6 @@ async function main(basePath) {
         '\nRenamed "\\RenderedItems" to "\\RenderedItems_backup"\n'
       )
     }
-
-    // ----------------------------------------
-    const tempPath = path.resolve(basePath, '_temp')
-    if (await checkDir(tempPath)) await removeDir(tempPath)
   } catch (error) {
     console.error('❌ Fatal error in main:', error)
   } finally {
