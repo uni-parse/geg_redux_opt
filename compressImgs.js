@@ -24,7 +24,7 @@ const {
   execAsync,
   spawnAsync,
 } = require('./utilities')
-const { getResizeDimension } = require('./resize')
+const { getResize } = require('./resize')
 
 module.exports = {
   compressImgs,
@@ -349,7 +349,7 @@ async function compressImgs(
 }
 
 async function optAndConvertToDDS(img, outPath) {
-  const { canResize, resizeDimension } = getResizeDimension(img)
+  const { canResize, resize } = getResize(img)
 
   const hasAlpha = img.channels.includes('a')
   const compression = hasAlpha ? 'dxt5' : 'dxt1'
@@ -360,8 +360,7 @@ async function optAndConvertToDDS(img, outPath) {
   command += '-colorspace RGB '
 
   // Resize if needed
-  if (canResize)
-    command += `-resize "${resizeDimension}x${resizeDimension}>" `
+  if (canResize) command += `-resize "${resize}x${resize}>" `
 
   // Remove alpha if not needed
   if (!hasAlpha) command += '-alpha off '

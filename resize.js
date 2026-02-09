@@ -1,9 +1,17 @@
-// this to prevent resizing any img has small max width/heigh
-// ex: preserve imgs with 32x32 or 24x12... if MIN_DIMENSION=32
-const MIN_DIMENSION = 32
+const path = require('node:path')
+
+  // adjust as you wish
+  const minDimension = 32
+  const maxDimension = 512
+  const percent = 60
+
+  // add other names you don't want to resize
+  const exluded = [
+    'startgame', // Main Menu "/MEDIA/SPLASHES/startgame.tga"
+  ]
 
 // need tests to get the right resizes
-function getResizeDimension(img) {
+function getResize(img) {
   const {
     size, // number
     width, // number
@@ -14,23 +22,29 @@ function getResizeDimension(img) {
     orgRelPath, // relative path, ex "./media/items/name.dds"
     orgExt, // ex .dds .tga .png .jpg .bmp
   } = img
-  const maxDimension = Math.max(width, height)
-  let resizeDimension = maxDimension
+  const imgDimension = Math.max(width, height)
+  let resize = imgDimension
   let canResize = true
 
-  const isMainMenuImg = basename.toLowerCase() === 'startgame'
-
-  if (isMainMenuImg || maxDimension <= MIN_DIMENSION)
+  // skip exluded imgs
+  if (
+    exluded
+      .map(p => path.basename(p).toLowerCase())
+      .includes(basename.toLowerCase())
+  )
     canResize = false
-  else if (maxDimension <= 64) resizeDimension = 32
-  else if (maxDimension <= 128) resizeDimension = 64
-  else if (maxDimension <= 256) resizeDimension = 128
-  else if (maxDimension <= 512) resizeDimension = 256
-  else resizeDimension = 512
+  // skip small imgs
+  else if (imgDimension <= minDimension) canResize = false
+  // resize large imgs to maxDimension or percent%
+  else if (imgDimension > maxDimension)
+    resize = Math.min(
+      maxDimension,
+      imgDimension * (percent / 100)
+    )
+  // resize everything else to percent
+  else resize = `${percent}%`
 
-  return { canResize, resizeDimension }
+  return { canResize, resize }
 }
 
-module.exports = {
-  getResizeDimension,
-}
+module.exports = { getResize }
