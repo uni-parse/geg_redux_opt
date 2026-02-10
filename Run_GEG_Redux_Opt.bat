@@ -1,6 +1,15 @@
 @echo off
 setlocal enabledelayedexpansion
 
+:: Clear all variables at start
+set "args="
+set "src_path="
+set "select_mode="
+set "floatPointDecimal="
+set "resizePercent="
+set "minResize="
+set "maxResize="
+
 :: Prompt for src_path
 :src_path
 echo Enter path to "...\Mods\GEG Redux\Data":
@@ -10,7 +19,7 @@ if "!src_path!"=="" (
     goto :src_path
 )
 
-:: Clean path from quates and tailing \
+:: Clean path from quotes and trailing \
 set "src_path=!src_path:"=!"
 if "!src_path:~-1!"=="\" set "src_path=!src_path:~0,-1!"
 
@@ -39,7 +48,7 @@ if "!select_mode!"=="2" goto :ask_images
 cls
 set default_floatPointDecimal=3
 :ask_floatPointDecimal
-echo Enter number of decemals after float point (2~6)%%
+echo Enter number of decimals after float point (2~6)
 echo Or press Enter to default to: %default_floatPointDecimal%
 
 set /p floatPointDecimal="> "
@@ -52,9 +61,7 @@ echo !floatPointDecimal!|findstr /r "^[2-6]$" >nul || (
 )
 set "args=!args! --floatPointDecimal !floatPointDecimal!"
 
-
-
-if "!select_mode!"=="1" goto :run_script
+if "!select_mode!"=="1" goto :show_summary
 
 :ask_images
 
@@ -92,9 +99,45 @@ set /p maxResize="> "
 if "!maxResize!"=="" set maxResize=%default_maxResize%
 set "args=!args! --maxResize !maxResize!"
 
-:run_script
+:show_summary
+cls
+echo ========================================
+echo              SUMMARY
+echo ========================================
+echo.
+echo Source Path:       !src_path!
+echo.
+echo Mode Selected:     !select_mode!
+if "!select_mode!"=="1" (
+    echo Mode:           3D Mech files only
+    echo Float Decimals: !floatPointDecimal!
+) else if "!select_mode!"=="2" (
+    echo Mode:           Image files only
+    echo Resize Percent: !resizePercent!%%
+    echo Min Dimension:  !minResize!px
+    echo Max Dimension:  !maxResize!px
+) else if "!select_mode!"=="3" (
+    echo Mode:           Both 3D Mech and Image files
+    echo Float Decimals: !floatPointDecimal!
+    echo Resize Percent: !resizePercent!%%
+    echo Min Dimension:  !minResize!px
+    echo Max Dimension:  !maxResize!px
+)
+echo.
+echo ========================================
+echo.
+set /p confirm="Press Enter to start processing"
+
+echo.
+echo Starting processing...
+echo ========================================
+echo.
 
 :: Run Node.js script with all arguments
 node "%~dp0src/index.js" "!src_path!" !select_mode! !args!
+
+echo.
+echo ========================================
+echo Processing complete!
 
 pause
