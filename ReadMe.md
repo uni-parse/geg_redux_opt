@@ -15,15 +15,15 @@
      /Mods/GEG Redux/Data/_backup/ACTORS/ITEMS
   - done
 
-## Compress Imgs process:
-  - skip/copy small imgs & unsupported files (as .vtf)
+## Compress Textures process:
+  - skip/copy small textures & unsupported files (as .vtf)
   - rename misFormated & fix corrupt .dds (magick required it)
   - resize/convert everything to .dds (by magick)
   - rename back to org filename (compatibility hack)
   - renamed "/RenderedItems" to "/RenderedItems_backup" (to generate fresh cache)
 
 ## Compress 3d Mesh process:
-  - remove //line_commaets and /*multi_line_comments*/
+  - remove `//line_comments` and `/*multi_line_comments*/`
   - round float points ex:
     ```bash
     -1.000000 => -1
