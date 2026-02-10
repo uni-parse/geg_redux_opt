@@ -38,6 +38,6 @@ set /p maxResize="> "
 if "!maxResize!"=="" set maxResize=%default_maxResize%
 
 :: Run Node.js script with all arguments
-node "%~dp0index.js" "%src_path%" "%resizePercent%" "%minResize%" "%maxResize%"
+node "%~dp0src/index.js" "%src_path%" "%resizePercent%" "%minResize%" "%maxResize%"
 
 pause
