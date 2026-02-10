@@ -16,7 +16,7 @@ async function compressMech(
   IO_LIMIT,
   srcPath,
   destPath,
-  floatPointDecimal
+  floatDecimal
 ) {
   const allPaths = await getAllFilePaths(srcPath)
   const { actPaths, attPaths, infPaths, otherPaths } =
@@ -42,7 +42,7 @@ async function compressMech(
       const content = await fs.readFile(p, 'utf8')
       const optContent = opt_Att_Inf_Content(
         content,
-        floatPointDecimal
+        floatDecimal
       )
 
       const outPath = p.replace(srcPath, destPath)
@@ -85,10 +85,7 @@ async function compressMech(
     CORES_LIMIT,
     async p => {
       const content = await fs.readFile(p, 'utf8')
-      const optContent = opt_Act_Content(
-        content,
-        floatPointDecimal
-      )
+      const optContent = opt_Act_Content(content, floatDecimal)
 
       const outPath = p.replace(srcPath, destPath)
 
@@ -176,7 +173,7 @@ function filterActPaths(allPaths) {
   return { actPaths, infPaths, attPaths, otherPaths }
 }
 
-function opt_Att_Inf_Content(content, floatPointDecimal) {
+function opt_Att_Inf_Content(content, floatDecimal) {
   return (
     content
       // Remove /* ... */ comments
@@ -185,7 +182,7 @@ function opt_Att_Inf_Content(content, floatPointDecimal) {
       .replace(/\/\/.*$/gm, '')
       // Optimize floats
       .replace(/(-?\d*\.\d+)/g, m =>
-        roundFloat(m, floatPointDecimal)
+        roundFloat(m, floatDecimal)
       )
       // split to lines arr
       .split(/\r?\n/)
@@ -198,7 +195,7 @@ function opt_Att_Inf_Content(content, floatPointDecimal) {
   )
 }
 
-function opt_Act_Content(content, floatPointDecimal) {
+function opt_Act_Content(content, floatDecimal) {
   const lines = content
     // Remove /* ... */ comments
     .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -224,9 +221,7 @@ function opt_Act_Content(content, floatPointDecimal) {
     .replaceAll(';,', ',')
     .replaceAll(';;', ';')
     // Optimize floats
-    .replace(/(-?\d*\.\d+)/g, m =>
-      roundFloat(m, floatPointDecimal)
-    )
+    .replace(/(-?\d*\.\d+)/g, m => roundFloat(m, floatDecimal))
 
   const optContent = `${header}\n${rest}`
   return optContent

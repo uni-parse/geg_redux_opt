@@ -133,7 +133,7 @@ async function main(basePath, selectMode, options) {
         IO_LIMIT,
         mechBackup,
         mechTemp,
-        options.floatPointDecimal
+        options.floatDecimal
       )
 
       if (await checkDir(mechTemp)) {

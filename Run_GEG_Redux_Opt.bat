@@ -5,7 +5,7 @@ setlocal enabledelayedexpansion
 set "args="
 set "src_path="
 set "select_mode="
-set "floatPointDecimal="
+set "floatDecimal="
 set "resizePercent="
 set "minResize="
 set "maxResize="
@@ -27,8 +27,8 @@ cls
 :select_mode
 echo Select what to optimize:
 echo [1] 3D Mech files only
-echo [2] Image files only
-echo [3] Both 3D Mech and Image files
+echo [2] Textures only
+echo [3] Both 3D Mech and Textures
 echo.
 echo Or press Enter to default to: 3 (Both)
 echo.
@@ -44,22 +44,24 @@ echo !select_mode!|findstr /r "^[1-3]$" >nul || (
 
 if "!select_mode!"=="2" goto :ask_images
 
-:: Prompt for floatPointDecimal
+:: Prompt for floatDecimal
 cls
-set default_floatPointDecimal=3
-:ask_floatPointDecimal
+set default_floatDecimal=3
+:ask_floatDecimal
+echo for 3d Mech optimization
 echo Enter number of decimals after float point (2~6)
-echo Or press Enter to default to: %default_floatPointDecimal%
+echo Or press Enter to default to: %default_floatDecimal%
+echo example: 1.234567 opted to 1.235
 
-set /p floatPointDecimal="> "
-if "!floatPointDecimal!"=="" set floatPointDecimal=%default_floatPointDecimal%
-echo !floatPointDecimal!|findstr /r "^[2-6]$" >nul || (
+set /p floatDecimal="> "
+if "!floatDecimal!"=="" set floatDecimal=%default_floatDecimal%
+echo !floatDecimal!|findstr /r "^[2-6]$" >nul || (
   cls
   echo Invalid input. Must be between 2 and 6.
   echo.
-  goto :ask_floatPointDecimal
+  goto :ask_floatDecimal
 )
-set "args=!args! --floatPointDecimal !floatPointDecimal!"
+set "args=!args! --floatDecimal !floatDecimal!"
 
 if "!select_mode!"=="1" goto :show_summary
 
@@ -107,18 +109,18 @@ echo ========================================
 echo.
 echo Source Path:       !src_path!
 echo.
-echo Mode Selected:     !select_mode!
+echo Selected Mode:      !select_mode!
 if "!select_mode!"=="1" (
-    echo Mode:           3D Mech files only
-    echo Float Decimals: !floatPointDecimal!
+    echo Optimize:       3D Mech files only
+    echo Float Decimals: !floatDecimal!
 ) else if "!select_mode!"=="2" (
-    echo Mode:           Image files only
+    echo Optimize:       Textures only
     echo Resize Percent: !resizePercent!%%
     echo Min Dimension:  !minResize!px
     echo Max Dimension:  !maxResize!px
 ) else if "!select_mode!"=="3" (
-    echo Mode:           Both 3D Mech and Image files
-    echo Float Decimals: !floatPointDecimal!
+    echo Optimize:       Both 3D Mech and Textures
+    echo Float Decimals: !floatDecimal!
     echo Resize Percent: !resizePercent!%%
     echo Min Dimension:  !minResize!px
     echo Max Dimension:  !maxResize!px
