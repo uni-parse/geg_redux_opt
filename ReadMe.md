@@ -23,7 +23,7 @@
   - renamed "/RenderedItems" to "/RenderedItems_backup" (to generate fresh cache)
 
 ## Compress 3d Mesh process:
-  - remove `//line_comments` and `/*multi_line_comments*/`
+  - remove `// line comments` and `/* multi line comments */`
   - round float points ex:
     ```bash
     -1.000000 => -1
