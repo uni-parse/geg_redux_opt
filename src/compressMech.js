@@ -14,10 +14,11 @@ module.exports = {
 async function compressMech(
   CORES_LIMIT,
   IO_LIMIT,
-  SRC_ACT_PATH,
-  DEST_ACT_PATH
+  srcPath,
+  destPath,
+  floatPointDecimal
 ) {
-  const allPaths = await getAllFilePaths(SRC_ACT_PATH)
+  const allPaths = await getAllFilePaths(srcPath)
   const { actPaths, attPaths, infPaths, otherPaths } =
     filterActPaths(allPaths)
 
@@ -27,7 +28,7 @@ async function compressMech(
     otherPaths,
     IO_LIMIT,
     async p => {
-      const outPath = p.replace(SRC_ACT_PATH, DEST_ACT_PATH)
+      const outPath = p.replace(srcPath, destPath)
       await copyFile(p, outPath)
     }
   )
@@ -39,9 +40,12 @@ async function compressMech(
     CORES_LIMIT,
     async p => {
       const content = await fs.readFile(p, 'utf8')
-      const optContent = opt_Att_Inf_Content(content)
+      const optContent = opt_Att_Inf_Content(
+        content,
+        floatPointDecimal
+      )
 
-      const outPath = p.replace(SRC_ACT_PATH, DEST_ACT_PATH)
+      const outPath = p.replace(srcPath, destPath)
 
       // Create output directory if needed
       const dir = path.dirname(outPath)
@@ -81,9 +85,12 @@ async function compressMech(
     CORES_LIMIT,
     async p => {
       const content = await fs.readFile(p, 'utf8')
-      const optContent = opt_Act_Content(content)
+      const optContent = opt_Act_Content(
+        content,
+        floatPointDecimal
+      )
 
-      const outPath = p.replace(SRC_ACT_PATH, DEST_ACT_PATH)
+      const outPath = p.replace(srcPath, destPath)
 
       // Create output directory if needed
       const dir = path.dirname(outPath)
@@ -169,7 +176,7 @@ function filterActPaths(allPaths) {
   return { actPaths, infPaths, attPaths, otherPaths }
 }
 
-function opt_Att_Inf_Content(content) {
+function opt_Att_Inf_Content(content, floatPointDecimal) {
   return (
     content
       // Remove /* ... */ comments
@@ -177,7 +184,9 @@ function opt_Att_Inf_Content(content) {
       // Remove // comments
       .replace(/\/\/.*$/gm, '')
       // Optimize floats
-      .replace(/(-?\d*\.\d+)/g, m => roundFloat(m))
+      .replace(/(-?\d*\.\d+)/g, m =>
+        roundFloat(m, floatPointDecimal)
+      )
       // split to lines arr
       .split(/\r?\n/)
       // trim spaces at the start and end
@@ -189,7 +198,7 @@ function opt_Att_Inf_Content(content) {
   )
 }
 
-function opt_Act_Content(content) {
+function opt_Act_Content(content, floatPointDecimal) {
   const lines = content
     // Remove /* ... */ comments
     .replace(/\/\*[\s\S]*?\*\//g, '')
@@ -215,7 +224,9 @@ function opt_Act_Content(content) {
     .replaceAll(';,', ',')
     .replaceAll(';;', ';')
     // Optimize floats
-    .replace(/(-?\d*\.\d+)/g, m => roundFloat(m))
+    .replace(/(-?\d*\.\d+)/g, m =>
+      roundFloat(m, floatPointDecimal)
+    )
 
   const optContent = `${header}\n${rest}`
   return optContent

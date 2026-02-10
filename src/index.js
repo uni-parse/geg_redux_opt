@@ -21,26 +21,33 @@ const IO_LIMIT = 20 // default to SSD
 if (require.main === module) {
   const args = process.argv.slice(2)
 
-  main(...args).catch(error => {
+  const basePath = args[0]
+  const selectMode = parseInt(args[1])
+
+  const options = {}
+  for (const [i, arg] of args.slice(2).entries())
+    if (arg.startsWith('--'))
+      options[arg.slice(2)] = parseInt(args[i + 1 + 2])
+
+  main(basePath, selectMode, options).catch(error => {
     console.error('Unhandled error:', error)
     process.exit(1)
   })
 }
 
-async function main(
-  basePath,
-  resizePercent,
-  minResize,
-  maxResize
-) {
+async function main(basePath, selectMode, options) {
   const timerLabel = 'Total Time'
   console.time(timerLabel)
+
+  const optMechOnly = selectMode === 1
+  const optImagesOnly = selectMode === 2
+  const optAll = selectMode === 3
 
   try {
     if (!basePath || !(await checkDir(basePath))) {
       console.warn(
         `Invalid basePath "${basePath}"\n` +
-          'Usage: node index.js "path\\to\\Mods\\GEG Redux\\Data"'
+          'it must be path to "...\\Mods\\GEG Redux\\Data"'
       )
       return
     }
@@ -52,61 +59,94 @@ async function main(
       '_backup',
       'MEDIA'
     )
+    const isValidMediaSrc = await checkDir(mediaSrc)
+    const isValidMediaBackup = await checkDir(mediaBackup)
 
-    const actSrc = path.resolve(basePath, 'ACTORS', 'ITEMS')
-    const actTemp = path.resolve(
+    const mechSrc = path.resolve(basePath, 'ACTORS', 'ITEMS')
+    const mechTemp = path.resolve(
       basePath,
       '_temp',
       'ACTORS',
       'ITEMS'
     )
-    const actBackup = path.resolve(
+    const mechBackup = path.resolve(
       basePath,
       '_backup',
       'ACTORS',
       'ITEMS'
     )
-
-    const isValidMediaSrc = await checkDir(mediaSrc)
-    const isValidMediaBackup = await checkDir(mediaBackup)
-    const isValidActSrc = await checkDir(actSrc)
-    const isValidActBackup = await checkDir(actBackup)
+    const isValidMechSrc = await checkDir(mechSrc)
+    const isValidMechBackup = await checkDir(mechBackup)
 
     if (
+      optImagesOnly &&
       !isValidMediaSrc &&
-      !isValidActSrc &&
-      !isValidMediaBackup &&
-      !isValidActBackup
+      !isValidMediaBackup
     ) {
       console.warn(
         `invalid basePath "${basePath}" \n` +
-          `the basePath should contain the sub paths ".\\MEDIA\\" or ".\\ACTORS\\ITEMS\\" \n` +
-          'Usage: node index.js "path\\to\\Mods\\GEG Redux\\Data"'
+          'it should contain the sub path ".\\MEDIA"\n' +
+          `missing "${basePath}\\MEDIA"`
+      )
+
+      return
+    }
+
+    if (optMechOnly && !isValidMechSrc && !isValidMechBackup) {
+      console.warn(
+        `invalid basePath "${basePath}" \n` +
+          'it should contain the sub path ".\\ACTORS\\ITEMS"\n' +
+          `missing "${basePath}\\ACTORS\\ITEMS"`
+      )
+
+      return
+    }
+
+    if (
+      optAll &&
+      !isValidMediaSrc &&
+      !isValidMediaBackup &&
+      !isValidMechSrc &&
+      !isValidMechBackup
+    ) {
+      console.warn(
+        `invalid basePath "${basePath}" \n` +
+          `it should contain at least one sub path ".\\MEDIA" or ".\\ACTORS\\ITEMS"\n` +
+          `missing "${basePath}\\ACTORS\\ITEMS"\n` +
+          'or\n' +
+          `missing "${basePath}\\MEDIA"`
       )
 
       return
     }
 
     // ---------------------------------------
-    if (isValidActSrc || isValidActBackup) {
-      if (!isValidActBackup) await moveDir(actSrc, actBackup)
-      if (await checkDir(actTemp)) await removeDir(actTemp)
+    if (
+      !optImagesOnly &&
+      (isValidMechSrc || isValidMechBackup)
+    ) {
+      if (!isValidMechBackup) await moveDir(mechSrc, mechBackup)
+      if (await checkDir(mechTemp)) await removeDir(mechTemp)
 
       await compressMech(
         CORES_LIMIT,
         IO_LIMIT,
-        actBackup,
-        actTemp
+        mechBackup,
+        mechTemp,
+        options.floatPointDecimal
       )
 
-      if (await checkDir(actTemp)) {
-        await moveDir(actTemp, actSrc)
-        await removeDir(actTemp)
+      if (await checkDir(mechTemp)) {
+        await moveDir(mechTemp, mechSrc)
+        await removeDir(mechTemp)
       }
     }
 
     // ---------------------------------------
-    if (isValidMediaSrc || isValidMediaBackup) {
+    if (
+      !optMechOnly &&
+      (isValidMediaSrc || isValidMediaBackup)
+    ) {
       if (!isValidMediaBackup)
         await moveDir(mediaSrc, mediaBackup)
       if (await checkDir(mediaTemp)) await removeDir(mediaTemp)
@@ -116,9 +156,9 @@ async function main(
         IO_LIMIT,
         mediaBackup,
         mediaTemp,
-        resizePercent,
-        minResize,
-        maxResize
+        options.resizePercent,
+        options.minResize,
+        options.maxResize
       )
 
       if (await checkDir(mediaTemp)) {
