@@ -12,10 +12,10 @@ module.exports = {
 }
 
 async function compressMech(
-  SRC_ACT_PATH,
-  DEST_ACT_PATH,
   CORES_LIMIT,
-  IO_LIMIT
+  IO_LIMIT,
+  SRC_ACT_PATH,
+  DEST_ACT_PATH
 ) {
   const allPaths = await getAllFilePaths(SRC_ACT_PATH)
   const { actPaths, attPaths, infPaths, otherPaths } =

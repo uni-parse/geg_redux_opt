@@ -7,14 +7,7 @@
     git clone "https://github.com/uni-parse/geg_redux_opt"
     cd geg_redux_opt
   - adjust <b>resize.js</b> as you wish
-  - start the script:
-    ```bash
-    node index.js "path/to/Mods/GEG Redux/Data/"
-  - or
-    ```bash
-    double click on: Run_GEG_Redux_Opt.bat
-    paste: "path/to/Mods/GEG Redux/Data/"
-    press: Enter
+  - double click on /Run_GEG_Redux_Opt.bat and follow instructins
   - wait (it took ~20min on ssd & cpu i5-2450m 2core/4thread)
   - backup will be generated (you can remove it if you want):
      ```bash

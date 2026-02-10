@@ -27,34 +27,38 @@ if (require.main === module) {
   })
 }
 
-async function main(basePath) {
+async function main(
+  basePath,
+  resizePercent,
+  minResize,
+  maxResize
+) {
   const timerLabel = 'Total Time'
   console.time(timerLabel)
 
   try {
     if (!basePath || !(await checkDir(basePath))) {
       console.warn(
-        'Invalid basePath\n' +
+        `Invalid basePath "${basePath}"\n` +
           'Usage: node index.js "path\\to\\Mods\\GEG Redux\\Data"'
       )
       return
     }
 
     const mediaSrc = path.resolve(basePath, 'MEDIA')
-    const actSrc = path.resolve(basePath, 'ACTORS', 'ITEMS')
-
     const mediaTemp = path.resolve(basePath, '_temp', 'MEDIA')
+    const mediaBackup = path.resolve(
+      basePath,
+      '_backup',
+      'MEDIA'
+    )
+
+    const actSrc = path.resolve(basePath, 'ACTORS', 'ITEMS')
     const actTemp = path.resolve(
       basePath,
       '_temp',
       'ACTORS',
       'ITEMS'
-    )
-
-    const mediaBackup = path.resolve(
-      basePath,
-      '_backup',
-      'MEDIA'
     )
     const actBackup = path.resolve(
       basePath,
@@ -64,8 +68,8 @@ async function main(basePath) {
     )
 
     const isValidMediaSrc = await checkDir(mediaSrc)
-    const isValidActSrc = await checkDir(actSrc)
     const isValidMediaBackup = await checkDir(mediaBackup)
+    const isValidActSrc = await checkDir(actSrc)
     const isValidActBackup = await checkDir(actBackup)
 
     if (
@@ -76,7 +80,7 @@ async function main(basePath) {
     ) {
       console.warn(
         `invalid basePath "${basePath}" \n` +
-          `the basePath should contain the sub paths ".\\MEDIA\\" and ".\\ACTORS\\ITEMS\\" \n` +
+          `the basePath should contain the sub paths ".\\MEDIA\\" or ".\\ACTORS\\ITEMS\\" \n` +
           'Usage: node index.js "path\\to\\Mods\\GEG Redux\\Data"'
       )
 
@@ -89,10 +93,10 @@ async function main(basePath) {
       if (await checkDir(actTemp)) await removeDir(actTemp)
 
       await compressMech(
-        actBackup,
-        actTemp,
         CORES_LIMIT,
-        IO_LIMIT
+        IO_LIMIT,
+        actBackup,
+        actTemp
       )
 
       if (await checkDir(actTemp)) {
@@ -108,10 +112,13 @@ async function main(basePath) {
       if (await checkDir(mediaTemp)) await removeDir(mediaTemp)
 
       await compressImgs(
+        CORES_LIMIT,
+        IO_LIMIT,
         mediaBackup,
         mediaTemp,
-        CORES_LIMIT,
-        IO_LIMIT
+        resizePercent,
+        minResize,
+        maxResize
       )
 
       if (await checkDir(mediaTemp)) {

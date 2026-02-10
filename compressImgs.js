@@ -51,12 +51,15 @@ const EXTENSIONS = [
 ]
 
 async function compressImgs(
-  SRC_MEDIA_PATH,
-  DEST_MEDIA_PATH,
   CORES_LIMIT,
-  IO_LIMIT
+  IO_LIMIT,
+  srcPath,
+  destPath,
+  resizePercent,
+  minResize,
+  maxResize
 ) {
-  const filePaths = await getAllFilePaths(SRC_MEDIA_PATH)
+  const filePaths = await getAllFilePaths(srcPath)
 
   // Filter supported imgs
   const imgPaths = filePaths.filter(p =>
@@ -77,10 +80,7 @@ async function compressImgs(
     unSupportedPaths,
     IO_LIMIT,
     async p => {
-      const outputPath = p.replace(
-        SRC_MEDIA_PATH,
-        DEST_MEDIA_PATH
-      )
+      const outputPath = p.replace(srcPath, destPath)
       await copyFile(p, outputPath)
 
       if (SHOW_MORE_LOGS)
@@ -95,20 +95,20 @@ async function compressImgs(
     // org status
     orgFilename: path.basename(p),
     orgPath: p,
-    orgRelPath: path.relative(SRC_MEDIA_PATH, p),
+    orgRelPath: path.relative(srcPath, p),
     orgExt: path.extname(p),
 
     // current status
     filename: path.basename(p),
     path: p,
-    relPath: path.relative(SRC_MEDIA_PATH, p),
+    relPath: path.relative(srcPath, p),
     ext: path.extname(p),
 
     // compatibility hack
     // to bypass configs absolute paths misMatching
     // at the end, we MOST rename to org filename
     // ex: huge img.TGA => convert/opt img.png => renamed img.TGA
-    finalPath: p.replace(SRC_MEDIA_PATH, DEST_MEDIA_PATH),
+    finalPath: p.replace(srcPath, destPath),
 
     setPath(newPath) {
       const newExt = path.extname(newPath)
@@ -155,7 +155,7 @@ async function compressImgs(
     IO_LIMIT,
     async img => {
       const outPath = img.orgPath
-        .replace(SRC_MEDIA_PATH, DEST_MEDIA_PATH)
+        .replace(srcPath, destPath)
         .replace(img.orgExt, img.actualExt)
 
       await copyFile(img.path, outPath)
@@ -208,14 +208,20 @@ async function compressImgs(
     CORES_LIMIT,
     async img => {
       const outPath = img.orgPath
-        .replace(SRC_MEDIA_PATH, DEST_MEDIA_PATH)
+        .replace(srcPath, destPath)
         .replace(img.orgExt, '.dds')
 
       // Create output directory if needed
       const dir = path.dirname(outPath)
       await fs.mkdir(dir, { recursive: true })
 
-      await optAndConvertToDDS(img, outPath)
+      await optAndConvertToDDS(
+        img,
+        outPath,
+        resizePercent,
+        minResize,
+        maxResize
+      )
 
       // update
       img.isOpted = true
@@ -348,8 +354,19 @@ async function compressImgs(
   )
 }
 
-async function optAndConvertToDDS(img, outPath) {
-  const { canResize, resize } = getResize(img)
+async function optAndConvertToDDS(
+  img,
+  outPath,
+  resizePercent,
+  minResize,
+  maxResize
+) {
+  const { canResize, resize } = getResize(
+    img,
+    resizePercent,
+    minResize,
+    maxResize
+  )
 
   const hasAlpha = img.channels.includes('a')
   const compression = hasAlpha ? 'dxt5' : 'dxt1'
