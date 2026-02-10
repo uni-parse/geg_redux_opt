@@ -18,6 +18,7 @@ if "!src_path:~-1!"=="\" set "src_path=!src_path:~0,-1!"
 
 :: Prompt for resizePercent
 set default_resizePercent=60
+echo.
 echo Enter resize percentage %%
 echo Or press Enter to default to: %default_resizePercent%
 set /p resizePercent="> "
@@ -25,6 +26,7 @@ if "!resizePercent!"=="" set resizePercent=%default_resizePercent%
 
 :: Prompt for minResize
 set default_minResize=32
+echo.
 echo Enter min resize dimension in pixels
 echo Or press Enter to default to: %default_minResize%
 set /p minResize="> "
@@ -32,6 +34,7 @@ if "!minResize!"=="" set minResize=%default_minResize%
 
 :: Prompt for maxResize
 set default_maxResize=512
+echo.
 echo Enter max resize dimension in pixels
 echo Or press Enter to default to: %default_maxResize%
 set /p maxResize="> "
