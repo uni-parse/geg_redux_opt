@@ -2,7 +2,7 @@
   - install [node](https://nodejs.org/en/download/current) if you didn't yet:
 
 ## Usage:
-  - clone the git repo (or download the code zip directly from github):
+  - clone the git repo (or [download](https://github.com/uni-parse/geg_redux_opt/archive/refs/heads/main.zip) the code zip):
     ```bash
     git clone "https://github.com/uni-parse/geg_redux_opt"
     cd geg_redux_opt
