@@ -184,8 +184,14 @@ async function compressImgs(
     uniqueImgs,
     IO_LIMIT,
     async img => {
-      const { size, width, height, dimensions, channels } =
-        await getImageStatus(img.path)
+      const {
+        size,
+        width,
+        height,
+        dimensions,
+        channels,
+        depth,
+      } = await getImageStatus(img.path)
 
       // update
       img.size = size
@@ -193,6 +199,7 @@ async function compressImgs(
       img.height = height
       img.dimensions = dimensions
       img.channels = channels
+      img.depth = depth
 
       return img
     },
@@ -261,8 +268,14 @@ async function compressImgs(
     optedImgs,
     IO_LIMIT,
     async img => {
-      const { size, width, height, dimensions, channels } =
-        await getImageStatus(img.path)
+      const {
+        size,
+        width,
+        height,
+        dimensions,
+        channels,
+        depth,
+      } = await getImageStatus(img.path)
 
       const saved = img.size - size
       const savedPercent = Math.round((saved / img.size) * 100)
@@ -274,6 +287,7 @@ async function compressImgs(
         height,
         dimensions,
         channels,
+        depth,
         saved,
         savedPercent,
       }
@@ -369,27 +383,19 @@ async function optAndConvertToDDS(
     maxResize
   )
 
-  const hasAlpha = img.channels.includes('a')
-  const compression = hasAlpha ? 'dxt5' : 'dxt1'
-
   let command = `"${MAGICK_EXE_PATH}" "${img.path}" `
 
-  // Convert to linear RGB for processing
-  command += '-colorspace RGB '
+  if (img.depth > 8) command += '-depth 8 '
 
   // Resize if needed
   if (canResize) command += `-resize "${resize}x${resize}>" `
 
-  // Remove alpha if not needed
-  if (!hasAlpha) command += '-alpha off '
-
   // Set DDS compression
+  const compression = await decideCompression(img)
   command += `-define dds:compression=${compression} `
   command += '-define dds:mipmaps=4 '
   command += '-define dds:fast-mipmaps=true '
-
-  // Convert back to sRGB (required for gamma correction)
-  command += '-colorspace sRGB '
+  command += '-define dds:weighted=false '
 
   command += `"${outPath}"`
 
@@ -473,14 +479,13 @@ async function getImageStatus(inputPath) {
     const result = await spawnAsync(MAGICK_EXE_PATH, [
       'identify',
       '-format',
-      '%B|%w|%h|%[channels]',
+      '%B|%w|%h|%[channels]|%[depth]',
       inputPath,
     ])
 
     if (result.stdout) {
-      const [size, width, height, channels] = result.stdout
-        .trim()
-        .split('|')
+      const [size, width, height, channels, depth] =
+        result.stdout.trim().split('|')
 
       return {
         size: parseInt(size),
@@ -488,6 +493,7 @@ async function getImageStatus(inputPath) {
         height: parseInt(height),
         dimensions: `${width}x${height}`,
         channels: channels.toLowerCase(),
+        depth: parseInt(depth),
       }
     }
   } catch ({ error }) {
@@ -496,6 +502,33 @@ async function getImageStatus(inputPath) {
       error?.message
     )
   }
+}
+
+async function decideCompression(img) {
+  const hasAlphaChannel = img.channels.includes('a')
+  if (!hasAlphaChannel) return 'dxt1'
+
+  const result = await spawnAsync(MAGICK_EXE_PATH, [
+    img.path,
+    '-alpha',
+    'extract',
+    '-format',
+    '%c',
+    'histogram:info:',
+  ])
+
+  const lines = result.stdout.trim().split('\n')
+  for (const line of lines) {
+    const match = line.match(/\:\s+\((\d+)/)
+    if (!match) continue
+
+    const transValue = parseInt(match[1])
+    const isBinary = transValue === 0 || transValue === 255
+
+    if (!isBinary) return 'dxt5'
+  }
+
+  return 'dxt1'
 }
 
 function deduplicateImgs(imgs) {
