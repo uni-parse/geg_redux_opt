@@ -40,7 +40,7 @@ async function main(basePath, selectMode, options) {
   console.time(timerLabel)
 
   const optMechOnly = selectMode === 1
-  const optImagesOnly = selectMode === 2
+  const optTexturesOnly = selectMode === 2
   const optAll = selectMode === 3
 
   try {
@@ -52,6 +52,7 @@ async function main(basePath, selectMode, options) {
       return
     }
 
+    // "/MEDIA"
     const mediaSrc = path.resolve(basePath, 'MEDIA')
     const mediaTemp = path.resolve(basePath, '_temp', 'MEDIA')
     const mediaBackup = path.resolve(
@@ -61,7 +62,17 @@ async function main(basePath, selectMode, options) {
     )
     const isValidMediaSrc = await checkDir(mediaSrc)
     const isValidMediaBackup = await checkDir(mediaBackup)
+    const canOptMedia = isValidMediaSrc || isValidMediaBackup
 
+    // "/BMP"
+    const bmpSrc = path.resolve(basePath, 'BMP')
+    const bmpTemp = path.resolve(basePath, '_temp', 'BMP')
+    const bmpBackup = path.resolve(basePath, '_backup', 'BMP')
+    const isValidBmpSrc = await checkDir(bmpSrc)
+    const isValidBmpBackup = await checkDir(bmpBackup)
+    const canOptBmp = isValidBmpSrc || isValidBmpBackup
+
+    // "/ACTORS/ITEMS"
     const mechSrc = path.resolve(basePath, 'ACTORS', 'ITEMS')
     const mechTemp = path.resolve(
       basePath,
@@ -77,24 +88,11 @@ async function main(basePath, selectMode, options) {
     )
     const isValidMechSrc = await checkDir(mechSrc)
     const isValidMechBackup = await checkDir(mechBackup)
+    const canOptMech = isValidMechSrc || isValidMechBackup
 
-    if (
-      optImagesOnly &&
-      !isValidMediaSrc &&
-      !isValidMediaBackup
-    ) {
+    if (optMechOnly && !canOptMech) {
       console.warn(
-        `invalid basePath "${basePath}" \n` +
-          'it should contain the sub path ".\\MEDIA"\n' +
-          `missing "${basePath}\\MEDIA"`
-      )
-
-      return
-    }
-
-    if (optMechOnly && !isValidMechSrc && !isValidMechBackup) {
-      console.warn(
-        `invalid basePath "${basePath}" \n` +
+        `invalid basePath "${basePath}"\n` +
           'it should contain the sub path ".\\ACTORS\\ITEMS"\n' +
           `missing "${basePath}\\ACTORS\\ITEMS"`
       )
@@ -102,29 +100,31 @@ async function main(basePath, selectMode, options) {
       return
     }
 
-    if (
-      optAll &&
-      !isValidMediaSrc &&
-      !isValidMediaBackup &&
-      !isValidMechSrc &&
-      !isValidMechBackup
-    ) {
+    if (optTexturesOnly && !canOptMedia && !canOptBmp) {
       console.warn(
-        `invalid basePath "${basePath}" \n` +
-          `it should contain at least one sub path ".\\MEDIA" or ".\\ACTORS\\ITEMS"\n` +
+        `invalid basePath "${basePath}"\n` +
+          'it should contain at least one sub path ".\\MEDIA" or ".\\BMP"\n' +
+          `missing "${basePath}\\MEDIA"\n` +
+          `missing "${basePath}\\BMP"`
+      )
+
+      return
+    }
+
+    if (optAll && !canOptMedia && !canOptBmp && !canOptMech) {
+      console.warn(
+        `invalid basePath "${basePath}"\n` +
+          `it should contain at least one sub path ".\\MEDIA" or ".\\BMP" or ".\\ACTORS\\ITEMS"\n` +
           `missing "${basePath}\\ACTORS\\ITEMS"\n` +
-          'or\n' +
-          `missing "${basePath}\\MEDIA"`
+          `missing "${basePath}\\MEDIA"\n` +
+          `missing "${basePath}\\BMP"`
       )
 
       return
     }
 
     // ---------------------------------------
-    if (
-      !optImagesOnly &&
-      (isValidMechSrc || isValidMechBackup)
-    ) {
+    if (canOptMech && !optTexturesOnly) {
       if (!isValidMechBackup) await moveDir(mechSrc, mechBackup)
       if (await checkDir(mechTemp)) await removeDir(mechTemp)
 
@@ -143,10 +143,28 @@ async function main(basePath, selectMode, options) {
     }
 
     // ---------------------------------------
-    if (
-      !optMechOnly &&
-      (isValidMediaSrc || isValidMediaBackup)
-    ) {
+    if (canOptBmp || !optMechOnly) {
+      if (!isValidBmpBackup) await moveDir(bmpSrc, bmpBackup)
+      if (await checkDir(bmpTemp)) await removeDir(bmpTemp)
+
+      await compressImgs(
+        CORES_LIMIT,
+        IO_LIMIT,
+        bmpBackup,
+        bmpTemp,
+        // do not resize, it have apsolute sperit textures
+        100, //options.resizePercent,
+        99999, //options.minResize,
+        99999 //options.maxResize
+      )
+
+      if (await checkDir(bmpTemp)) {
+        await moveDir(bmpTemp, bmpSrc)
+        await removeDir(bmpTemp)
+      }
+    }
+
+    if (canOptMedia || !optMechOnly) {
       if (!isValidMediaBackup)
         await moveDir(mediaSrc, mediaBackup)
       if (await checkDir(mediaTemp)) await removeDir(mediaTemp)
@@ -180,13 +198,11 @@ async function main(basePath, selectMode, options) {
       'RenderedItems'
     )
     if (await checkDir(renderedItemsPath)) {
-      await fs.rename(
-        renderedItemsPath,
-        `${renderedItemsPath}_backup_${Date.now()}`
-      )
+      const backup = `${renderedItemsPath}_backup_${Date.now()}`
+      await fs.rename(renderedItemsPath, backup)
 
       console.log(
-        '\nRenamed "\\RenderedItems" to "\\RenderedItems_backup"\n'
+        `\nRenamed "\\RenderedItems" to "\\${backup}"\n`
       )
     }
   } catch (error) {
