@@ -1,35 +1,61 @@
-## Requirments:
-  - install [node](https://nodejs.org/en/download/current) if you didn't yet:
+# GEG Redux Opt
 
-## Usage:
-  - clone the git repo (or [download](https://github.com/uni-parse/geg_redux_opt/archive/refs/heads/main.zip) the code zip):
+
+## The Problem
+  - The Engine run on **32-bit** => **limited** to **4GB RAM**, even with [4GB patch](https://ntcore.com/4gb-patch/)
+  - The Engine have known **Memory Leaks**
+  - The Mod added 6000+ unOptimized OverSized Textures (5.4gb)
+  - The Mod added 11000+ unOptimized 3d Mech text based (3.2gb)
+  - Mix the above points and you will get **FREQUENT CRACHES**
+
+## The Solution
+  - optimize 3d mech 3.2gb => 1.8gb+ (based on your settings)
+  - optimize textures 5.4gb => 300mb+ (based on your settings)
+  - convert all texture to the memory friendly .dds (dxt1/dxt5)
+  - downScale overSized textures as 2k/4k (based on your settings)
+  - this way, we will reduce memory leak craches
+
+## Requirments
+  - install [node](https://nodejs.org/en/download/current) if you did not yet:
+
+## Usage
+  - [download](https://github.com/uni-parse/geg_redux_opt/archive/refs/heads/main.zip) the code zip, or clone the git repo:
     ```bash
     git clone "https://github.com/uni-parse/geg_redux_opt"
     cd geg_redux_opt
-  - adjust <b>resize.js</b> as you wish
-  - double click on /Run_GEG_Redux_Opt.bat and follow instructins
-  - wait (it took ~20min on ssd & cpu i5-2450m 2core/4thread)
-  - backup will be generated (you can remove it if you want):
+  - optional: if you do not want to resize a texture add it in `/geg_redux_opt/src/resize.js`
+  - double click on `/Run_GEG_Redux_Opt.bat` and follow instructins
+  - wait (depend on your hardware it may took 5~25min)
+  - backup will be generated (you can remove it):
      ```bash
-     /Mods/GEG Redux/Data/_backup/MEDIA
      /Mods/GEG Redux/Data/_backup/ACTORS/ITEMS
-  - done
+     /Mods/GEG Redux/Data/_backup/MEDIA
+     /Mods/GEG Redux/Data/_backup/BMP
+  
+## Refresh Cache Tutorial
+  - the script will automaticly rename `/RenderedItems` to `/RenderedItems_backup`
+  - load save
+  - open console by the key `~`
+  - enter the command `enter_dev_mode` and press Enter
+  - enter the command `shop` and press Enter
+  - wait (it will take 5~20min based on your hardware)
+  - and now a fresh cache will be generated `/RenderedItems`
+  - and from now on your loading time will fast on shops
 
-## Compress Textures process:
-  - target textures (.tga .dds .bmp .png .jpg) in "/MEDIA" or "/BMP"
+## Texture Processing Pipeline
+  - target textures in `/MEDIA` or `/BMP`: .tga .dds .bmp .png .jpg
   - skip/copy small textures & unsupported files (as .vtf)
-  - rename misFormated & fix corrupt .dds (magick required it)
+  - rename misFormated & fix corrupt .dds (required by magick)
   - opt/convert everything to .dds (by magick)
-  - resize only "/MEDIA" textures and preserve "/BMP" textures
-  - rename back to org filename (compatibility hack)
-  - renamed "/RenderedItems" to "/RenderedItems_backup" (to refresh cache)
+  - resize only `/MEDIA` textures  (preserve the UI `/BMP` textures)
+  - compatibility hack: rename back to org filename
 
-## Compress 3d Mesh process:
-  - target files (.act .actx .x .act.1) and (.att .inf) in "/ACTORS/ITEMS"
-  - remove `// line comments` and `/* multi line comments */`
-  - round float points ex:
+## 3D Mesh Processing Pipeline
+  - target files in `/ACTORS/ITEMS`: .act .actx .x .act.1 .att .inf
+  - clear `// line comments` and `/* multi-line comments */`
+  - round floating-point coordinates ex:
     ```bash
     -1.000000 => -1
     1.234567 => 1.235
-  - remove white-space as: spaces, tabs, new lines
-  - remove unnecessary tailing ";"
+  - clear white-space as: spaces, tabs, new lines
+  - clear unnecessary tailing semicolons `;`
