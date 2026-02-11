@@ -93,8 +93,7 @@ async function main(basePath, selectMode, options) {
     if (optMechOnly && !canOptMech) {
       console.warn(
         `invalid basePath "${basePath}"\n` +
-          'it should contain the sub path ".\\ACTORS\\ITEMS"\n' +
-          `missing "${basePath}\\ACTORS\\ITEMS"`
+          'missing sub directory "\\ACTORS\\ITEMS"'
       )
 
       return
@@ -103,9 +102,7 @@ async function main(basePath, selectMode, options) {
     if (optTexturesOnly && !canOptMedia && !canOptBmp) {
       console.warn(
         `invalid basePath "${basePath}"\n` +
-          'it should contain at least one sub path ".\\MEDIA" or ".\\BMP"\n' +
-          `missing "${basePath}\\MEDIA"\n` +
-          `missing "${basePath}\\BMP"`
+          'missing sub directory "\\MEDIA" or "\\BMP"'
       )
 
       return
@@ -114,10 +111,7 @@ async function main(basePath, selectMode, options) {
     if (optAll && !canOptMedia && !canOptBmp && !canOptMech) {
       console.warn(
         `invalid basePath "${basePath}"\n` +
-          `it should contain at least one sub path ".\\MEDIA" or ".\\BMP" or ".\\ACTORS\\ITEMS"\n` +
-          `missing "${basePath}\\ACTORS\\ITEMS"\n` +
-          `missing "${basePath}\\MEDIA"\n` +
-          `missing "${basePath}\\BMP"`
+          `missing sub directory "\\MEDIA" or "\\BMP" or "\\ACTORS\\ITEMS"`
       )
 
       return

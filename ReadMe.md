@@ -16,13 +16,16 @@
   - done
 
 ## Compress Textures process:
+  - target textures (.tga .dds .bmp .png .jpg) in "/MEDIA" or "/BMP"
   - skip/copy small textures & unsupported files (as .vtf)
   - rename misFormated & fix corrupt .dds (magick required it)
-  - resize/convert everything to .dds (by magick)
+  - opt/convert everything to .dds (by magick)
+  - resize only "/MEDIA" textures and preserve "/BMP" textures
   - rename back to org filename (compatibility hack)
-  - renamed "/RenderedItems" to "/RenderedItems_backup" (to generate fresh cache)
+  - renamed "/RenderedItems" to "/RenderedItems_backup" (to refresh cache)
 
 ## Compress 3d Mesh process:
+  - target files (.act .actx .x .act.1) and (.att .inf) in "/ACTORS/ITEMS"
   - remove `// line comments` and `/* multi line comments */`
   - round float points ex:
     ```bash
