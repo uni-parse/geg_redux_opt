@@ -159,12 +159,8 @@ function filterActPaths(allPaths) {
     if (ext === '.inf') infPaths.push(p)
     else if (ext === '.att') attPaths.push(p)
     else if (
-      [
-        '.act',
-        // '.actx',
-        // '.x'
-      ].includes(ext)
-      // || filename.endsWith('.act.1')
+      ['.act', '.actx', '.x'].includes(ext) ||
+      filename.endsWith('.act.1')
     )
       actPaths.push(p)
     else otherPaths.push(p)
