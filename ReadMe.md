@@ -33,14 +33,18 @@
      /Mods/GEG Redux/Data/_backup/BMP
   
 ## Refresh Cache Tutorial
-  - the script will automaticly rename `/RenderedItems` to `/RenderedItems_backup`
+  - the script will automaticly rename old cache
+    ```bash
+    /Temp          => /Temp_backup_<date>
+    /RenderedItems => /RenderedItems_backup_<date>
+  - now let generate fresh cache (fellow below instractins)
   - load save
   - open console by the key `~`
   - enter the command `enter_dev_mode` and press Enter
   - enter the command `shop` and press Enter
   - wait (it will take 5~20min based on your hardware)
-  - and now a fresh cache will be generated `/RenderedItems`
-  - and from now on your loading time will fast on shops
+  - fresh cache will be generated `/Temp` & `/RenderedItems`
+  - from now on, shops loading time will be fast
 
 ## Texture Processing Pipeline
   - target textures in `/MEDIA` or `/BMP`: .tga .dds .bmp .png .jpg
