@@ -137,7 +137,7 @@ async function main(basePath, selectMode, options) {
     }
 
     // ---------------------------------------
-    if (canOptBmp || !optMechOnly) {
+    if (canOptBmp && !optMechOnly) {
       if (!isValidBmpBackup) await moveDir(bmpSrc, bmpBackup)
       if (await checkDir(bmpTemp)) await removeDir(bmpTemp)
 
@@ -158,7 +158,7 @@ async function main(basePath, selectMode, options) {
       }
     }
 
-    if (canOptMedia || !optMechOnly) {
+    if (canOptMedia && !optMechOnly) {
       if (!isValidMediaBackup)
         await moveDir(mediaSrc, mediaBackup)
       if (await checkDir(mediaTemp)) await removeDir(mediaTemp)
