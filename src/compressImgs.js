@@ -508,6 +508,13 @@ async function decideCompression(img) {
   const hasAlphaChannel = img.channels.includes('a')
   if (!hasAlphaChannel) return 'dxt1'
 
+  // temp hack to resolze alpha detection on /BMP/ textures
+  const hasDirBMP = path
+    .normalize(img.path.toLowerCase())
+    .split(path.sep)
+    .includes('bmp')
+  if (hasDirBMP) return 'dxt5'
+
   const result = await spawnAsync(MAGICK_EXE_PATH, [
     img.path,
     '-alpha',
