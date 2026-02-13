@@ -189,8 +189,8 @@ async function compressImgs(
         width,
         height,
         dimensions,
-        channels,
         depth,
+        hasAlpha,
       } = await getImageStatus(img.path)
 
       // update
@@ -198,8 +198,8 @@ async function compressImgs(
       img.width = width
       img.height = height
       img.dimensions = dimensions
-      img.channels = channels
       img.depth = depth
+      img.hasAlpha = hasAlpha
 
       return img
     },
@@ -273,8 +273,8 @@ async function compressImgs(
         width,
         height,
         dimensions,
-        channels,
         depth,
+        hasAlpha,
       } = await getImageStatus(img.path)
 
       const saved = img.size - size
@@ -286,8 +286,8 @@ async function compressImgs(
         width,
         height,
         dimensions,
-        channels,
         depth,
+        hasAlpha,
         saved,
         savedPercent,
       }
@@ -479,12 +479,12 @@ async function getImageStatus(inputPath) {
     const result = await spawnAsync(MAGICK_EXE_PATH, [
       'identify',
       '-format',
-      '%B|%w|%h|%[channels]|%[depth]',
+      '%B|%w|%h|%[depth]|%[channels]',
       inputPath,
     ])
 
     if (result.stdout) {
-      const [size, width, height, channels, depth] =
+      const [size, width, height, depth, channels] =
         result.stdout.trim().split('|')
 
       return {
@@ -492,8 +492,8 @@ async function getImageStatus(inputPath) {
         width: parseInt(width),
         height: parseInt(height),
         dimensions: `${width}x${height}`,
-        channels: channels.toLowerCase(),
         depth: parseInt(depth),
+        hasAlpha: channels.toLowerCase().includes('a'),
       }
     }
   } catch ({ error }) {
@@ -505,8 +505,7 @@ async function getImageStatus(inputPath) {
 }
 
 async function decideCompression(img) {
-  const hasAlphaChannel = img.channels.includes('a')
-  if (!hasAlphaChannel) return 'dxt1'
+  if (!img.hasAlpha) return 'dxt1'
 
   // temp hack to resolze alpha detection on /BMP/ textures
   const hasDirBMP = path
@@ -517,25 +516,31 @@ async function decideCompression(img) {
 
   const result = await spawnAsync(MAGICK_EXE_PATH, [
     img.path,
-    '-alpha',
-    'extract',
-    '-format',
-    '%c',
-    'histogram:info:',
+    '-verbose',
+    'info:',
   ])
 
-  const lines = result.stdout.trim().split('\n')
-  for (const line of lines) {
-    const match = line.match(/\:\s+\((\d+)/)
-    if (!match) continue
+  const output = result.stdout
+  if (!output) return 'dxt5' // fallback
 
-    const transValue = parseInt(match[1])
-    const isBinary = transValue === 0 || transValue === 255
+  // Check alpha channel depth
+  const depthMatch = output.match(/Alpha:\s+(\d+)-bit/)
+  if (!depthMatch) return 'dxt1' // No alpha channel
 
-    if (!isBinary) return 'dxt5'
+  const alphaDepth = parseInt(depthMatch[1])
+  if (alphaDepth === 1) return 'dxt1' // Binary transparency
+
+  // Check if alpha unused
+  const minMatch = output.match(
+    /Alpha:\s+min:\s+\d+\s+\(([\d.]+)\)/
+  )
+  if (minMatch) {
+    const min = parseFloat(minMatch[1])
+    const isOpaque = min === 1.0
+    if (isOpaque) return 'dxt1'
   }
 
-  return 'dxt1'
+  return 'dxt5' // Smooth transparency
 }
 
 function deduplicateImgs(imgs) {
