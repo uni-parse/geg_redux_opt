@@ -24,7 +24,7 @@ const {
   execAsync,
   spawnAsync,
 } = require('./utilities')
-const { getResize } = require('./resize')
+const { getResizeDimensions } = require('./resize')
 
 module.exports = {
   compressImgs,
@@ -376,19 +376,21 @@ async function optAndConvertToDDS(
   minResize,
   maxResize
 ) {
-  const { canResize, resize } = getResize(
-    img,
-    resizePercent,
-    minResize,
-    maxResize
-  )
+  const { canResize, newWidth, newHeight } =
+    getResizeDimensions(
+      img,
+      resizePercent,
+      minResize,
+      maxResize
+    )
 
   let command = `"${MAGICK_EXE_PATH}" "${img.path}" `
 
   if (img.depth > 8) command += '-depth 8 '
 
   // Resize if needed
-  if (canResize) command += `-resize "${resize}x${resize}>" `
+  if (canResize)
+    command += `-resize "${newWidth}x${newHeight}>" `
 
   // Set DDS compression
   const compression = await decideCompression(img)

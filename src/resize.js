@@ -6,7 +6,7 @@ const exluded = [
 ]
 
 // need tests to get the right resizes
-function getResize(
+function getResizeDimensions(
   img,
   resizePercent = 60,
   minResize = 32,
@@ -22,29 +22,40 @@ function getResize(
     orgRelPath, // relative path, ex "./media/items/name.dds"
     orgExt, // ex .dds .tga .png .jpg .bmp
   } = img
+
   const imgDimension = Math.max(width, height)
-  let resize = imgDimension
+  let newWidth = width
+  let newHeight = height
   let canResize = true
 
-  // skip exluded imgs
+  // skip exluded textures
   if (
     exluded
       .map(p => path.basename(p, path.extname(p)).toLowerCase())
       .includes(basename.toLowerCase())
   )
     canResize = false
-  // skip small imgs
+  // skip small textures
   else if (imgDimension <= minResize) canResize = false
-  // resize/limit large imgs to maxDimension
-  else if (imgDimension > maxResize)
-    resize = Math.min(
-      maxResize,
-      imgDimension * (resizePercent / 100)
-    )
-  // resize everything else to percent
-  else resize = `${resizePercent}%`
+  else {
+    let newDimension = imgDimension * (resizePercent / 100)
 
-  return { canResize, resize }
+    if (newDimension > maxResize) newDimension = maxResize
+    if (newDimension < minResize) newDimension = minResize
+
+    const aspectRatio = width / height
+    const isLandscape = width >= height
+
+    const smallDimension = newDimension / aspectRatio
+
+    newWidth = isLandscape ? newDimension : smallDimension
+    newHeight = !isLandscape ? newDimension : smallDimension
+
+    newWidth = Math.round(newWidth)
+    newHeight = Math.round(newHeight)
+  }
+
+  return { canResize, newWidth, newHeight }
 }
 
-module.exports = { getResize }
+module.exports = { getResizeDimensions }
