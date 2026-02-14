@@ -2,13 +2,13 @@ const path = require('node:path')
 
 // add other names you don't want to resize
 const exluded = [
-  'startgame', // Main Menu "/MEDIA/SPLASHES/startgame.tga"
+  'startgame.tga', // Main Menu "/MEDIA/SPLASHES/startgame.tga"
 ]
 
 // need tests to get the right resizes
 function getResizeDimensions(
   img,
-  resizePercent = 60,
+  resizePercent = 80,
   minResize = 32,
   maxResize = 512
 ) {
@@ -24,37 +24,34 @@ function getResizeDimensions(
   } = img
 
   const imgDimension = Math.max(width, height)
+
+  const isExluded = exluded
+    .map(p => path.basename(p).toLowerCase())
+    .includes(filename.toLowerCase())
+
+  if (
+    isExluded ||
+    resizePercent === 100 ||
+    imgDimension <= minResize
+  )
+    return { canResize: false }
+
+  let newDimension = imgDimension * (resizePercent / 100)
+  if (newDimension > maxResize) newDimension = maxResize
+  if (newDimension < minResize) newDimension = minResize
+
   const aspectRatio = width / height
   const isLandscape = width >= height
 
-  let newWidth = width
-  let newHeight = height
-  let canResize = true
+  const smallDimension = newDimension / aspectRatio
+  const newWidth = isLandscape ? newDimension : smallDimension
+  const newHeight = !isLandscape ? newDimension : smallDimension
 
-  // skip exluded textures
-  if (
-    exluded
-      .map(p => path.basename(p, path.extname(p)).toLowerCase())
-      .includes(basename.toLowerCase())
-  )
-    canResize = false
-  // skip small textures
-  else if (imgDimension <= minResize) canResize = false
-  else {
-    let newDimension = imgDimension * (resizePercent / 100)
-
-    if (newDimension > maxResize) newDimension = maxResize
-    if (newDimension < minResize) newDimension = minResize
-
-    const smallDimension = newDimension / aspectRatio
-    newWidth = isLandscape ? newDimension : smallDimension
-    newHeight = !isLandscape ? newDimension : smallDimension
-
-    newWidth = Math.round(newWidth)
-    newHeight = Math.round(newHeight)
+  return {
+    canResize: true,
+    newWidth: Math.round(newWidth),
+    newHeight: Math.round(newHeight),
   }
-
-  return { canResize, newWidth, newHeight }
 }
 
 module.exports = { getResizeDimensions }
