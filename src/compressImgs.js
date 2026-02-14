@@ -385,6 +385,17 @@ async function optAndConvertToDDS(
   minResize,
   maxResize
 ) {
+  let command = `"${MAGICK_EXE_PATH}"`
+  command += ` "${img.path}"`
+  command += ' -define dds:mipmaps=4'
+  command += ' -define dds:fast-mipmaps=true'
+  command += ' -define dds:weighted=false'
+
+  const compression = await decideCompression(img)
+  command += ` -define dds:compression=${compression}`
+
+  if (img.depth > 8) command += ' -depth 8'
+
   const { canResize, newWidth, newHeight } =
     getResizeDimensions(
       img,
@@ -392,23 +403,10 @@ async function optAndConvertToDDS(
       minResize,
       maxResize
     )
-
-  let command = `"${MAGICK_EXE_PATH}" "${img.path}" `
-
-  if (img.depth > 8) command += '-depth 8 '
-
-  // Resize if needed
   if (canResize)
-    command += `-resize "${newWidth}x${newHeight}>" `
+    command += ` -resize "${newWidth}x${newHeight}>"`
 
-  // Set DDS compression
-  const compression = await decideCompression(img)
-  command += `-define dds:compression=${compression} `
-  command += '-define dds:mipmaps=4 '
-  command += '-define dds:fast-mipmaps=true '
-  command += '-define dds:weighted=false '
-
-  command += `"${outPath}"`
+  command += ` "${outPath}"`
 
   await execAsync(command)
 }
