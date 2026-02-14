@@ -1,7 +1,7 @@
 /** process
- * copy/skip small imgs & unsupported files (as .vtf)
- * rename misFormated & fix corrupt .dds (magick required it)
- * opt/resize/convert everything to .dds (by magick)
+ * copy/skip unsupported files (as .vtf)
+ * rename misFormated / repair corrupt .dds (magick required it)
+ * opt/resize/convert everything to .dds (by texconv / magick)
  * rename back to org filename (compatibility hack)
  */
 
@@ -26,11 +26,7 @@ const {
 } = require('./utilities')
 const { getResizeDimensions } = require('./resize')
 
-module.exports = {
-  compressImgs,
-  detectImgFormat,
-  getImageStatus,
-}
+module.exports = { compressImgs }
 
 const MAGICK_EXE_PATH = path.resolve(
   __dirname,
