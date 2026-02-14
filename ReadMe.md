@@ -49,9 +49,9 @@
 ## Texture Processing Pipeline
   - target textures in `/MEDIA` or `/BMP`: .tga .dds .bmp .png .jpg
   - skip/copy small textures & unsupported files (as .vtf)
-  - rename misFormated & fix corrupt .dds (required by magick)
-  - opt/convert everything to .dds (by magick)
-  - resize only `/MEDIA` textures  (preserve the UI `/BMP` textures)
+  - rename misFormated & fix corrupt .dds (required by [magick.exe](https://imagemagick.org/))
+  - opt/convert everything to .dds (by [texconv.exe](https://github.com/microsoft/DirectXTex/wiki/Texconv) / [magick.exe](https://imagemagick.org/))
+  - resize only `/MEDIA` textures (preserve the UI `/BMP` textures)
   - compatibility hack: rename back to org filename
 
 ## 3D Mesh Processing Pipeline
