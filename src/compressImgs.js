@@ -40,6 +40,14 @@ const MAGICK_EXE_PATH = path.resolve(
   'magick.exe'
 )
 
+const TEXCONV_PATH = path.resolve(
+  __dirname,
+  '..',
+  'tools',
+  'texconv October 2025',
+  'texconv.exe'
+)
+
 const SHOW_MORE_LOGS = false
 
 const EXTENSIONS = [
@@ -232,13 +240,23 @@ async function compressImgs(
       const dir = path.dirname(outPath)
       await fs.mkdir(dir, { recursive: true })
 
-      await optAndConvertToDDS(
-        img,
-        outPath,
-        resizePercent,
-        minResize,
-        maxResize
-      )
+      try {
+        await convertToDDS_texconv(
+          img,
+          outPath,
+          resizePercent,
+          minResize,
+          maxResize
+        )
+      } catch (error) {
+        await convertToDDS_magick(
+          img,
+          outPath,
+          resizePercent,
+          minResize,
+          maxResize
+        )
+      }
 
       // update
       img.isOpted = true
@@ -379,7 +397,44 @@ async function compressImgs(
   )
 }
 
-async function optAndConvertToDDS(
+async function convertToDDS_texconv(
+  img,
+  outPath,
+  resizePercent,
+  minResize,
+  maxResize
+) {
+  let command = `"${TEXCONV_PATH}"`
+  command += ` "${img.path}"`
+  command += ` -o "${path.dirname(outPath)}"`
+  command += ` --overwrite`
+  command += ' --single-proc' // disable multi thread
+  command += ' --file-type dds'
+  command += ' --mip-levels 4'
+
+  const compression = await decideCompression(img)
+  command += ` --format ${compression}`
+
+  const { canResize, newWidth, newHeight } =
+    getResizeDimensions(
+      img,
+      resizePercent,
+      minResize,
+      maxResize
+    )
+  if (canResize) {
+    command += ` --width ${newWidth}`
+    command += ` --height ${newHeight}`
+  }
+
+  try {
+    await execAsync(command)
+  } catch ({ error }) {
+    throw new Error(error)
+  }
+}
+
+async function convertToDDS_magick(
   img,
   outPath,
   resizePercent,
@@ -409,7 +464,11 @@ async function optAndConvertToDDS(
 
   command += ` "${outPath}"`
 
-  await execAsync(command)
+  try {
+    await execAsync(command)
+  } catch ({ error }) {
+    throw new Error(error)
+  }
 }
 
 async function detectImgFormat(inputPath) {
@@ -516,13 +575,6 @@ async function getImageStatus(inputPath) {
 
 async function decideCompression(img) {
   if (!img.hasAlpha) return 'dxt1'
-
-  // temp hack to resolze alpha detection on /BMP/ textures
-  const hasDirBMP = path
-    .normalize(img.path.toLowerCase())
-    .split(path.sep)
-    .includes('bmp')
-  if (hasDirBMP) return 'dxt5'
 
   const result = await spawnAsync(MAGICK_EXE_PATH, [
     img.path,
