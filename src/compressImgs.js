@@ -141,7 +141,7 @@ async function compressImgs(
 
   // Flag misFormated imgs
   // Flag Corrupted .dds imgs
-  await parallelProccess(
+  const misFormat_or_curroptDDS_imgs = await parallelProccess(
     'Flag misFormat / Corrupt .dds imgs',
     uniqueImgs,
     IO_LIMIT,
@@ -150,12 +150,15 @@ async function compressImgs(
       const isMisFormated =
         img.orgExt.toLowerCase() !== actualExt
 
+      const isCorruptDDS =
+        actualExt === '.dds' && (await detectCurroptDDS(img))
+
       // update
       img.isMisFormated = isMisFormated
       img.actualExt = actualExt
+      img.isCorruptDDS = isCorruptDDS
 
-      if (actualExt === '.dds')
-        img.isCorruptDDS = await detectCurroptDDS(img)
+      if (isMisFormated || isCorruptDDS) return img
     }
   )
 
@@ -163,9 +166,7 @@ async function compressImgs(
   // Repair corrupt .dds imgs
   await parallelProccess(
     'Fix misFormat imgs / Corrupt .dds imgs',
-    uniqueImgs.filter(
-      img => img.isMisFormated || img.isCorruptDDS
-    ),
+    misFormat_or_curroptDDS_imgs,
     IO_LIMIT,
     async img => {
       const outPath = path.join(
@@ -190,6 +191,8 @@ async function compressImgs(
 
       // update
       img.setPath(outPath)
+
+      if (img.isRenamed || img.isRepairedDDS) return img
     }
   )
 
