@@ -95,51 +95,49 @@ async function compressImgs(
   )
 
   // init imgs objects details
-  const imgs = imgPaths.map(p => ({
-    basename: path.basename(p, path.extname(p)),
-    relDir: path.dirname(path.relative(baseSrcDir, p)),
+  const imgs = imgPaths.map(p => {
+    const ext = path.extname(p)
+    const basename = path.basename(p, ext)
+    const filename = path.basename(p)
+    const relPath = path.relative(baseSrcDir, p)
+    const relDir = path.dirname(relPath)
 
-    // org status
-    orgFilename: path.basename(p),
-    orgPath: p,
-    orgRelPath: path.relative(baseSrcDir, p),
-    orgExt: path.extname(p),
+    return {
+      // duplication hack
+      id: `___${crypto?.randomUUID?.() ?? Math.random()}`,
 
-    // current status
-    filename: path.basename(p),
-    path: p,
-    relPath: path.relative(baseSrcDir, p),
-    ext: path.extname(p),
+      basename,
+      relDir,
 
-    // compatibility hack
-    // to bypass configs absolute paths misMatching
-    // at the end, we MOST rename to org filename
-    // ex: huge img.TGA => convert/opt img.png => renamed img.TGA
-    finalPath: p.replace(baseSrcDir, baseDestDir),
+      // org status
+      orgFilename: filename,
+      orgPath: p,
+      orgRelPath: relPath,
+      orgExt: ext,
 
-    setPath(newPath) {
-      const newExt = path.extname(newPath)
-      this.filename = path.basename(newPath)
-      this.path = newPath
-      this.relPath = path.join(
-        this.relDir,
-        this.basename + newExt
-      )
-      this.ext = newExt
+      // current status
+      filename,
+      path: p,
+      relPath,
+      ext,
 
-      return this
-    },
-  }))
+      setPath(newPath) {
+        const newFilename = path.basename(newPath)
+        this.filename = newFilename
+        this.path = newPath
+        this.relPath = path.join(this.relDir, newFilename)
+        this.ext = path.extname(newPath)
 
-  // Flag duplicated imgs
-  const { uniqueImgs, duplicateImgs, orgDuplicateImgs } =
-    deduplicateImgs(imgs)
+        return this
+      },
+    }
+  })
 
   // Flag misFormated imgs
   // Flag Corrupted .dds imgs
   const misFormat_or_curroptDDS_imgs = await parallelProccess(
     'Flag misFormat / Corrupt .dds imgs',
-    uniqueImgs,
+    imgs,
     IO_LIMIT,
     async img => {
       const actualExt = await detectImgFormat(img.orgPath)
@@ -168,7 +166,7 @@ async function compressImgs(
       const outPath = path.join(
         baseDestDir,
         img.relDir,
-        img.basename + img.actualExt
+        img.basename + img.id + img.actualExt
       )
 
       await copyFile(img.path, outPath)
@@ -195,7 +193,7 @@ async function compressImgs(
   // Collect img status
   await parallelProccess(
     `Collect imgs status`,
-    uniqueImgs,
+    imgs,
     IO_LIMIT,
     async img => {
       const {
@@ -226,13 +224,13 @@ async function compressImgs(
   // Opt & Convert to .dds
   const optedImgs = await parallelProccess(
     'Opt & Convert to .DDS',
-    uniqueImgs,
+    imgs,
     CORES_LIMIT,
     async img => {
       const outPath = path.join(
         baseDestDir,
         img.relDir,
-        img.basename + '.dds'
+        img.basename + img.id + '.dds'
       )
 
       // Create output directory if needed
@@ -257,34 +255,19 @@ async function compressImgs(
         )
       }
 
+      // Remove temp renamed imgs
+      // org  actual rename convert remove
+      // tga => tga => --- => dds  no (convert from src)
+      // dds => dds => --- => dds  no (convert from src)
+      // tga => dds => dds => dds  no (overwrite dest)
+      // tga => png => png => dds  remove (temp renamed png)
+      if (img.isRenamed && img.actualExt !== '.dds')
+        await fs.unlink(img.path)
+
       // update
       img.isOpted = true
       img.setPath(outPath)
 
-      return img
-    }
-  )
-
-  // Remove temp renamed imgs
-  // org  actual rename convert remove
-  // tga => tga => --- => dds   no (convert from src)
-  // dds => dds => --- => dds   no (convert from src)
-  // tga => dds => dds => dds   no (overrite dest)
-  // tga => png => png => dds   remove (temp renamed png)
-  const tempRenamedImgs = uniqueImgs.filter(
-    img => img.isRenamed && img.actualExt !== '.dds'
-  )
-  await parallelProccess(
-    'Remove temp renamed imgs',
-    tempRenamedImgs,
-    CORES_LIMIT,
-    async img => {
-      const renamedPath = path.join(
-        baseDestDir,
-        img.relDir,
-        img.basename + img.actualExt
-      )
-      await fs.unlink(renamedPath)
       return img
     }
   )
@@ -331,42 +314,23 @@ async function compressImgs(
   // Restore original filename
   await parallelProccess(
     'Restore org filename (compatibility hack)',
-    uniqueImgs,
+    imgs,
     IO_LIMIT,
     async img => {
-      await fs.rename(img.path, img.finalPath)
-      img.setPath(img.finalPath)
+      const outPath = path.join(
+        baseDestDir,
+        img.relDir,
+        img.orgFilename
+      )
+
+      if (img.isOpted || img.isRenamed || img.isRepairedDDS)
+        await fs.rename(img.path, outPath)
+      else await copyFile(img.path, outPath) // fallback
+
+      // update
+      img.setPath(outPath)
+
       return img
-    }
-  )
-
-  // Copy duplicates
-  await parallelProccess(
-    'Copy duplicates',
-    duplicateImgs,
-    IO_LIMIT,
-    async img => {
-      const { orgDuplicateImg } = img
-
-      // update org status
-      const { size } = await fs.stat(img.orgPath)
-      img.size = size
-      img.width = orgDuplicateImg.width
-      img.height = orgDuplicateImg.height
-      img.dimensions = orgDuplicateImg.dimensions
-
-      await copyFile(orgDuplicateImg.path, img.finalPath)
-      img.setPath(img.finalPath)
-
-      // update opt status
-      img.isOpted = orgDuplicateImg.isOpted
-      img.opt = orgDuplicateImg.opt
-
-      img.isMisFormated = orgDuplicateImg.isMisFormated
-      img.isRenamed = orgDuplicateImg.isRenamed
-
-      img.isCorruptDDS = orgDuplicateImg.isCorruptDDS
-      img.isRepairedDDS = orgDuplicateImg.isRepairedDDS
     }
   )
 
@@ -378,14 +342,9 @@ async function compressImgs(
   const saved = orgSize - newSize
   const savedPercent = Math.round((saved / orgSize) * 100)
 
-  const optedImgsLength = imgs.reduce(
-    (_, img) => _ + +img.isOpted,
-    0
-  )
-
   console.log(
     `\n${'═'.repeat(60)}\n` +
-      `⚡ Optimized: ${optedImgsLength} / ${imgs.length} files\n` +
+      `⚡ Optimized: ${optedImgs.length} / ${imgs.length} textures\n` +
       `📊 Total Size: ${sizeToStr(orgSize)} → ${sizeToStr(
         newSize
       )}\n` +
@@ -394,6 +353,8 @@ async function compressImgs(
       )}\n` +
       `${'═'.repeat(60)}\n`
   )
+
+  return { orgSize, newSize, saved, savedPercent }
 }
 
 async function convertToDDS_texconv(
@@ -410,6 +371,9 @@ async function convertToDDS_texconv(
   command += ' --single-proc' // disable multi thread
   command += ' --file-type dds'
   command += ' --mip-levels 4'
+
+  if (!img.filename.includes(img.id))
+    command += ` --suffix "${img.id}"`
 
   const compression = await decideCompression(img)
   command += ` --format ${compression}`
