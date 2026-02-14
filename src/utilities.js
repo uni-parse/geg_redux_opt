@@ -106,7 +106,7 @@ function showProgressBar(
     `\r` +
       (label !== null ? label : '') +
       `[${bar}] ${percent}% (${processed}/${total})` +
-      (isEnd ? ' ✅' : '') +
+      (isEnd && !isError ? ' ✅' : '') +
       (isError ? ' ❌' : '')
   )
 }
