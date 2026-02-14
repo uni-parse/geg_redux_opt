@@ -31,8 +31,8 @@ function getResizeDimensions(
 
   if (
     isExluded ||
-    resizePercent === 100 ||
-    imgDimension <= minResize
+    imgDimension <= minResize ||
+    (resizePercent === 100 && imgDimension <= maxResize)
   )
     return { canResize: false }
 
