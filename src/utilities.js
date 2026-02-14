@@ -188,16 +188,18 @@ function spawnAsync(command, args, options = {}) {
 }
 
 function sizeToStr(bytes, decimals = 2) {
-  if (!+bytes) return '0 Bytes'
+  if (bytes === 0 || isNaN(bytes)) return '0 Bytes'
 
   const k = 1024
-  const dm = decimals < 0 ? 0 : decimals
-  const sizes = ['Bytes', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  const suffixes = ['Bytes', 'KB', 'MB', 'GB']
+  const absBytes = Math.abs(bytes)
+  const i = Math.floor(Math.log(absBytes) / Math.log(k))
 
-  return (
-    parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) +
-    ' ' +
-    sizes[i]
-  )
+  const dm = decimals < 0 ? 0 : decimals
+  const size = (absBytes / Math.pow(k, i)).toFixed(dm)
+
+  const prefix = bytes < 0 ? '-' : ''
+  const suffix = ` ${suffixes[i]}`
+
+  return prefix + size + suffix
 }
