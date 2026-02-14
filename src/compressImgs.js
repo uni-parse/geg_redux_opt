@@ -357,6 +357,36 @@ async function compressImgs(
   return { orgSize, newSize, saved, savedPercent }
 }
 
+async function getImageStatus(inputPath) {
+  try {
+    const result = await spawnAsync(MAGICK_EXE_PATH, [
+      'identify',
+      '-format',
+      '%B|%w|%h|%[depth]|%[channels]',
+      inputPath,
+    ])
+
+    if (result.stdout) {
+      const [size, width, height, depth, channels] =
+        result.stdout.trim().split('|')
+
+      return {
+        size: parseInt(size),
+        width: parseInt(width),
+        height: parseInt(height),
+        dimensions: `${width}x${height}`,
+        depth: parseInt(depth),
+        hasAlpha: channels.toLowerCase().includes('a'),
+      }
+    }
+  } catch ({ error }) {
+    throw new Error(
+      `❌ Failed to stat file ${inputPath}:`,
+      error?.message
+    )
+  }
+}
+
 async function convertToDDS_texconv(
   img,
   outPath,
@@ -434,6 +464,38 @@ async function convertToDDS_magick(
   }
 }
 
+async function decideCompression(img) {
+  if (!img.hasAlpha) return 'dxt1'
+
+  const result = await spawnAsync(MAGICK_EXE_PATH, [
+    img.path,
+    '-verbose',
+    'info:',
+  ])
+
+  const output = result.stdout
+  if (!output) return 'dxt5' // fallback
+
+  // Check alpha channel depth
+  const depthMatch = output.match(/Alpha:\s+(\d+)-bit/)
+  if (!depthMatch) return 'dxt1' // No alpha channel
+
+  const alphaDepth = parseInt(depthMatch[1])
+  if (alphaDepth === 1) return 'dxt1' // Binary transparency
+
+  // Check if alpha unused
+  const minMatch = output.match(
+    /Alpha:\s+min:\s+\d+\s+\(([\d.]+)\)/
+  )
+  if (minMatch) {
+    const min = parseFloat(minMatch[1])
+    const isOpaque = min === 1.0
+    if (isOpaque) return 'dxt1'
+  }
+
+  return 'dxt5' // Smooth transparency
+}
+
 async function detectImgFormat(inputPath) {
   let fileHandler
 
@@ -504,131 +566,4 @@ async function repairCorruptDDS(inputPath) {
   } finally {
     await fileHandler?.close()
   }
-}
-
-async function getImageStatus(inputPath) {
-  try {
-    const result = await spawnAsync(MAGICK_EXE_PATH, [
-      'identify',
-      '-format',
-      '%B|%w|%h|%[depth]|%[channels]',
-      inputPath,
-    ])
-
-    if (result.stdout) {
-      const [size, width, height, depth, channels] =
-        result.stdout.trim().split('|')
-
-      return {
-        size: parseInt(size),
-        width: parseInt(width),
-        height: parseInt(height),
-        dimensions: `${width}x${height}`,
-        depth: parseInt(depth),
-        hasAlpha: channels.toLowerCase().includes('a'),
-      }
-    }
-  } catch ({ error }) {
-    throw new Error(
-      `❌ Failed to stat file ${inputPath}:`,
-      error?.message
-    )
-  }
-}
-
-async function decideCompression(img) {
-  if (!img.hasAlpha) return 'dxt1'
-
-  const result = await spawnAsync(MAGICK_EXE_PATH, [
-    img.path,
-    '-verbose',
-    'info:',
-  ])
-
-  const output = result.stdout
-  if (!output) return 'dxt5' // fallback
-
-  // Check alpha channel depth
-  const depthMatch = output.match(/Alpha:\s+(\d+)-bit/)
-  if (!depthMatch) return 'dxt1' // No alpha channel
-
-  const alphaDepth = parseInt(depthMatch[1])
-  if (alphaDepth === 1) return 'dxt1' // Binary transparency
-
-  // Check if alpha unused
-  const minMatch = output.match(
-    /Alpha:\s+min:\s+\d+\s+\(([\d.]+)\)/
-  )
-  if (minMatch) {
-    const min = parseFloat(minMatch[1])
-    const isOpaque = min === 1.0
-    if (isOpaque) return 'dxt1'
-  }
-
-  return 'dxt5' // Smooth transparency
-}
-
-function deduplicateImgs(imgs) {
-  // First, group by relPath without extension
-  const groups = new Map()
-  imgs.forEach(img => {
-    const key = path
-      .join(img.relDir, img.basename)
-      .toLowerCase()
-    if (!groups.has(key)) groups.set(key, [])
-    groups.get(key).push(img)
-  })
-
-  // For each group, pick the best format
-  const uniqueImgs = []
-  const duplicateImgs = []
-  const orgDuplicateImgs = []
-
-  groups.values().forEach(group => {
-    if (group.length === 1) {
-      // No duplicates
-      uniqueImgs.push(group[0])
-      return
-    }
-
-    const orgDuplicateImg = getBestDuplicateImg(group)
-    orgDuplicateImgs.push(orgDuplicateImg)
-    uniqueImgs.push(orgDuplicateImg)
-
-    // update
-    orgDuplicateImg.isOrgDuplicate = true
-
-    // Mark the rest as duplicates
-    group.forEach(img => {
-      if (img === orgDuplicateImg) return
-
-      // update
-      img.isDuplicate = true
-      img.orgDuplicateImg = orgDuplicateImg
-
-      duplicateImgs.push(img)
-    })
-  })
-
-  return { uniqueImgs, orgDuplicateImgs, duplicateImgs }
-}
-
-function getBestDuplicateImg(group) {
-  // Priority: DDS (already optimal) > easy to convert > hard to convert
-  const formatPriority = {
-    '.dds': 1, // Already DDS, no conversion needed!
-    '.tga': 2, // Easy for ImageMagick to convert to DDS
-    '.png': 3, // Easy to convert
-    '.bmp': 4, // Easy but large
-    '.jpg': 5, // Lossy, may have artifacts when converting
-    '.jpeg': 6, // Lossy, may have artifacts when converting
-  }
-
-  const getPriority = img => formatPriority[img.actualExt] || 99
-
-  // Sort by priority (lower number = higher priority)
-  group.sort((a, b) => getPriority(a) - getPriority(b))
-
-  const bestImg = group[0] // First = smallest
-  return bestImg
 }
