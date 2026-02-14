@@ -24,6 +24,9 @@ function getResizeDimensions(
   } = img
 
   const imgDimension = Math.max(width, height)
+  const aspectRatio = width / height
+  const isLandscape = width >= height
+
   let newWidth = width
   let newHeight = height
   let canResize = true
@@ -43,11 +46,7 @@ function getResizeDimensions(
     if (newDimension > maxResize) newDimension = maxResize
     if (newDimension < minResize) newDimension = minResize
 
-    const aspectRatio = width / height
-    const isLandscape = width >= height
-
     const smallDimension = newDimension / aspectRatio
-
     newWidth = isLandscape ? newDimension : smallDimension
     newHeight = !isLandscape ? newDimension : smallDimension
 
