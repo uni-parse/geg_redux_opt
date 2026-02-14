@@ -54,13 +54,13 @@ const EXTENSIONS = [
 async function compressImgs(
   CORES_LIMIT,
   IO_LIMIT,
-  srcPath,
-  destPath,
+  baseSrcDir,
+  baseDestDir,
   resizePercent,
   minResize,
   maxResize
 ) {
-  const filePaths = await getAllFilePaths(srcPath)
+  const filePaths = await getAllFilePaths(baseSrcDir)
 
   // Filter supported imgs
   const imgPaths = filePaths.filter(p =>
@@ -81,7 +81,7 @@ async function compressImgs(
     unSupportedPaths,
     IO_LIMIT,
     async p => {
-      const outputPath = p.replace(srcPath, destPath)
+      const outputPath = p.replace(baseSrcDir, baseDestDir)
       await copyFile(p, outputPath)
 
       if (SHOW_MORE_LOGS)
@@ -92,30 +92,34 @@ async function compressImgs(
   // init imgs objects details
   const imgs = imgPaths.map(p => ({
     basename: path.basename(p, path.extname(p)),
+    relDir: path.dirname(path.relative(baseSrcDir, p)),
 
     // org status
     orgFilename: path.basename(p),
     orgPath: p,
-    orgRelPath: path.relative(srcPath, p),
+    orgRelPath: path.relative(baseSrcDir, p),
     orgExt: path.extname(p),
 
     // current status
     filename: path.basename(p),
     path: p,
-    relPath: path.relative(srcPath, p),
+    relPath: path.relative(baseSrcDir, p),
     ext: path.extname(p),
 
     // compatibility hack
     // to bypass configs absolute paths misMatching
     // at the end, we MOST rename to org filename
     // ex: huge img.TGA => convert/opt img.png => renamed img.TGA
-    finalPath: p.replace(srcPath, destPath),
+    finalPath: p.replace(baseSrcDir, baseDestDir),
 
     setPath(newPath) {
       const newExt = path.extname(newPath)
       this.filename = path.basename(newPath)
       this.path = newPath
-      this.relPath = this.relPath.replace(this.ext, newExt)
+      this.relPath = path.join(
+        this.relDir,
+        this.basename + newExt
+      )
       this.ext = newExt
 
       return this
@@ -155,9 +159,11 @@ async function compressImgs(
     ),
     IO_LIMIT,
     async img => {
-      const outPath = img.orgPath
-        .replace(srcPath, destPath)
-        .replace(img.orgExt, img.actualExt)
+      const outPath = path.join(
+        baseDestDir,
+        img.relDir,
+        img.basename + img.actualExt
+      )
 
       await copyFile(img.path, outPath)
 
@@ -215,9 +221,11 @@ async function compressImgs(
     uniqueImgs,
     CORES_LIMIT,
     async img => {
-      const outPath = img.orgPath
-        .replace(srcPath, destPath)
-        .replace(img.orgExt, '.dds')
+      const outPath = path.join(
+        baseDestDir,
+        img.relDir,
+        img.basename + '.dds'
+      )
 
       // Create output directory if needed
       const dir = path.dirname(outPath)
@@ -253,9 +261,10 @@ async function compressImgs(
     tempRenamedImgs,
     CORES_LIMIT,
     async img => {
-      const renamedPath = img.path.replace(
-        '.dds',
-        img.actualExt
+      const renamedPath = path.join(
+        baseDestDir,
+        img.relDir,
+        img.basename + img.actualExt
       )
       await fs.unlink(renamedPath)
       return img
@@ -549,7 +558,9 @@ function deduplicateImgs(imgs) {
   // First, group by relPath without extension
   const groups = new Map()
   imgs.forEach(img => {
-    const key = img.relPath.replace(img.ext, '').toLowerCase()
+    const key = path
+      .join(img.relDir, img.basename)
+      .toLowerCase()
     if (!groups.has(key)) groups.set(key, [])
     groups.get(key).push(img)
   })
