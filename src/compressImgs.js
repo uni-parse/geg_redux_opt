@@ -35,6 +35,7 @@ module.exports = {
 const MAGICK_EXE_PATH = path.resolve(
   __dirname,
   '..',
+  'tools',
   'ImageMagick-7.1.2-13-portable-Q16-HDRI-x64',
   'magick.exe'
 )
