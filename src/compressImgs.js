@@ -325,7 +325,7 @@ async function compressImgs(
 
       if (img.isOpted || img.isRenamed || img.isRepairedDDS)
         await fs.rename(img.path, outPath)
-      else await copyFile(img.path, outPath) // fallback
+      else await copyFile(img.orgPath, outPath) // fallback
 
       // update
       img.setPath(outPath)
