@@ -255,14 +255,14 @@ async function compressImgs(
         )
       }
 
-      // Remove temp renamed imgs
-      // org  actual rename convert remove
-      // tga => tga => --- => dds  no (convert from src)
-      // dds => dds => --- => dds  no (convert from src)
-      // tga => dds => dds => dds  no (overwrite dest)
-      // tga => png => png => dds  remove (temp renamed png)
+      // Remove extra temp renamed textures
+      // org  actual rename convert results
+      // tga => tga => --- => dds : dds only (convert from src)
+      // dds => dds => --- => dds : dds only (convert from src)
+      // tga => dds => dds => dds : dds only (overwrite dest)
+      // tga => png => png => dds : dds + png (❌ remove png)
       if (img.isRenamed && img.actualExt !== '.dds')
-        await fs.unlink(img.path)
+        await fs.unlink(img.path) // old renamedPath
 
       // update
       img.isOpted = true

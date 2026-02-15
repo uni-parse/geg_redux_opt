@@ -30,7 +30,7 @@ echo [1] 3D Mech files only
 echo [2] Textures only
 echo [3] Both 3D Mech and Textures
 echo.
-echo Or press Enter to default to: 3 (Both)
+echo or press Enter to default to: 3 (Both)
 echo.
 
 set /p select_mode="Enter choice (1~3): "
@@ -50,7 +50,7 @@ set default_floatDecimal=3
 :ask_floatDecimal
 echo for 3d Mech optimization
 echo Enter number of decimals after float point (2~6)
-echo Or press Enter to default to: %default_floatDecimal%
+echo or press Enter to default to: %default_floatDecimal%
 echo example: 1.234567 opted to 1.235
 
 set /p floatDecimal="> "
@@ -67,7 +67,7 @@ if "!select_mode!"=="1" goto :show_summary
 
 :ask_images
 
-:: Prompt for resizePercent
+:: Prompt for resizePercent -------------------------
 set default_resizePercent=60
 cls
 :ask_resizePercent
@@ -83,24 +83,25 @@ echo !resizePercent!|findstr /r "^[1-9][0-9]*$" >nul || (
 )
 set "args=!args! --resizePercent !resizePercent!"
 
-:: Prompt for minResize
+:: Prompt for minResize -----------------------------
 set default_minResize=32
 cls
 echo Enter min resize dimension in pixels
-echo Or press Enter to default to: %default_minResize%
+echo or press Enter to default to: %default_minResize%
 set /p minResize="> "
 if "!minResize!"=="" set minResize=%default_minResize%
 set "args=!args! --minResize !minResize!"
 
-:: Prompt for maxResize
+:: Prompt for maxResize -----------------------------
 set default_maxResize=512
 cls
 echo Enter max resize dimension in pixels
-echo Or press Enter to default to: %default_maxResize%
+echo or press Enter to default to: %default_maxResize%
 set /p maxResize="> "
 if "!maxResize!"=="" set maxResize=%default_maxResize%
 set "args=!args! --maxResize !maxResize!"
 
+:: summary ------------------------------------------
 :show_summary
 cls
 echo ========================================

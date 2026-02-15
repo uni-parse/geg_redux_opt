@@ -146,7 +146,7 @@ async function main(basePath, selectMode, options) {
         IO_LIMIT,
         bmpBackup,
         bmpTemp,
-        // do not resize, it have apsolute sperit textures
+        // do not resize, it have aprolute ui/sprite textures
         100, //options.resizePercent,
         99999, //options.minResize,
         99999 //options.maxResize
