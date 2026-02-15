@@ -153,16 +153,11 @@ function filterActPaths(allPaths) {
   const otherPaths = []
 
   for (const p of allPaths) {
-    const filename = path.basename(p).toLowerCase()
     const ext = path.extname(p).toLowerCase()
 
     if (ext === '.inf') infPaths.push(p)
     else if (ext === '.att') attPaths.push(p)
-    else if (
-      ['.act', '.actx', '.x'].includes(ext) ||
-      filename.endsWith('.act.1')
-    )
-      actPaths.push(p)
+    else if (ext === '.act') actPaths.push(p)
     else otherPaths.push(p)
   }
 
