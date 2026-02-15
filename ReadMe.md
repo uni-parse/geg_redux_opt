@@ -35,8 +35,8 @@
 ## Refresh Cache Tutorial
   - the script will automaticly rename old cache
     ```bash
-    /Temp          => /Temp_backup_<date>
-    /RenderedItems => /RenderedItems_backup_<date>
+    /Temp          => /Temp_backup_<timestamp>
+    /RenderedItems => /RenderedItems_backup_<timestamp>
   - now let generate fresh cache (fellow below instractins)
   - load save
   - open console by the key `~`

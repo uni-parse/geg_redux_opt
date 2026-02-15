@@ -184,7 +184,7 @@ async function main(basePath, selectMode, options) {
     if (await checkDir(tempPath)) await removeDir(tempPath)
 
     // rename old cache -----------------------
-    const date = Date.now()
+    const timestamp = Date.now()
     const tempCachePath = path.resolve(
       basePath,
       '..',
@@ -193,11 +193,12 @@ async function main(basePath, selectMode, options) {
       'Temp'
     )
     if (await checkDir(tempCachePath)) {
-      const backup = `${tempCachePath}_backup_${date}`
-      await fs.rename(tempCachePath, backup)
+      const outPath = `${tempCachePath}_backup_${timestamp}`
+      await fs.rename(tempCachePath, outPath)
 
       console.log(
-        `\nRenamed old cache "\\Temp" to "\\${backup}"\n`
+        `Renamed old cache "\\Temp" => "\\Temp_backup_${timestamp}"\n` +
+          ` "${outPath}"\n`
       )
     }
 
@@ -209,11 +210,12 @@ async function main(basePath, selectMode, options) {
       'RenderedItems'
     )
     if (await checkDir(renderedItemsCachePath)) {
-      const backup = `${renderedItemsCachePath}_backup_${date}`
-      await fs.rename(renderedItemsCachePath, backup)
+      const outPath = `${renderedItemsCachePath}_backup_${timestamp}`
+      await fs.rename(renderedItemsCachePath, outPath)
 
       console.log(
-        `\nRenamed old cache "\\RenderedItems" to "\\${backup}"\n`
+        `Renamed old cache "\\RenderedItems" => "\\RenderedItems_backup_${timestamp}"\n` +
+          ` "${outPath}"`
       )
     }
   } catch (error) {
