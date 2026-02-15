@@ -47,10 +47,12 @@
   - from now on, shops loading time will be fast
 
 ## Texture Processing Pipeline
-  - target textures in `/MEDIA` or `/BMP`: .tga .dds .bmp .png .jpg
-  - skip/copy small textures & unsupported files (as .vtf)
-  - rename misFormated & fix corrupt .dds (required by [magick.exe](https://imagemagick.org/))
-  - opt/convert everything to .dds (by [texconv.exe](https://github.com/microsoft/DirectXTex/wiki/Texconv) / [magick.exe](https://imagemagick.org/))
+  - target textures: .tga .dds .bmp .png .jpg
+  - target directories: `/MEDIA`, `/BMP`
+  - skip/copy unsupported textures as .vtf ...
+  - rename misFormated textures (required by [magick.exe](https://imagemagick.org/))
+  - repair corrupt .dds headers (required by [magick.exe](https://imagemagick.org/))
+  - convert everything to .dds (compress dxt1/dxt5) (by [texconv.exe](https://github.com/microsoft/DirectXTex/wiki/Texconv) / [magick.exe](https://imagemagick.org/))
   - resize only `/MEDIA` textures (preserve the UI `/BMP` textures)
   - compatibility hack: rename back to org filename
 
