@@ -68,23 +68,41 @@ if "!select_mode!"=="1" goto :show_summary
 :ask_images
 
 :: Prompt for resizePercent -------------------------
-set default_resizePercent=60
+set default_resizePercent=80
 cls
 :ask_resizePercent
-echo Enter resize percentage %% (1~99)
-echo Or press Enter to default to: %default_resizePercent%
+echo Enter resize percentage %% (1~100)
+echo or press Enter to default to: %default_resizePercent%
 set /p resizePercent="> "
 if "!resizePercent!"=="" set resizePercent=%default_resizePercent%
-echo !resizePercent!|findstr /r "^[1-9][0-9]*$" >nul || (
+
+:: Remove % symbol if present
+set "resizePercent=!resizePercent:%%=!"
+
+echo !resizePercent!|findstr /r "^[0-9][0-9]*$" >nul || (
   cls
-  echo Invalid input. Must be between 1 and 99.
+  echo Invalid input. Must be a number.
+  echo.
+  goto :ask_resizePercent
+)
+
+:: Check range 1~100
+if !resizePercent! lss 1 (
+  cls
+  echo Error: Percentage cannot be less than 1.
+  echo.
+  goto :ask_resizePercent
+)
+if !resizePercent! gtr 100 (
+  cls
+  echo Error: Percentage cannot exceed 100.
   echo.
   goto :ask_resizePercent
 )
 set "args=!args! --resizePercent !resizePercent!"
 
 :: Prompt for minResize -----------------------------
-set default_minResize=32
+set default_minResize=64
 cls
 echo Enter min resize dimension in pixels
 echo or press Enter to default to: %default_minResize%
