@@ -46,12 +46,12 @@ if "!select_mode!"=="2" goto :ask_images
 
 :: Prompt for floatDecimal
 cls
-set default_floatDecimal=3
+set default_floatDecimal=4
 :ask_floatDecimal
 echo for 3d Mech optimization
 echo Enter number of decimals after float point (2~6)
 echo or press Enter to default to: %default_floatDecimal%
-echo example: 1.234567 opted to 1.235
+echo example: 0.123456 opted to 0.1235
 
 set /p floatDecimal="> "
 if "!floatDecimal!"=="" set floatDecimal=%default_floatDecimal%

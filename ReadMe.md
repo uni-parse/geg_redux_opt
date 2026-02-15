@@ -63,6 +63,6 @@
   - round floating-point coordinates ex:
     ```bash
     -1.000000 => -1
-    1.234567 => 1.235
+     0.123456 =>  0.1235
   - clear white-space as: spaces, tabs, new lines
   - clear unnecessary tailing semicolons `;`
