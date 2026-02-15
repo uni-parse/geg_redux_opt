@@ -246,6 +246,9 @@ async function compressImgs(
           maxResize
         )
       } catch (error) {
+        console.warn(
+          `\ntexconv.exe failed, fallback to magick.exe, "${img.relPath}"`
+        )
         await convertToDDS_magick(
           img,
           outPath,
