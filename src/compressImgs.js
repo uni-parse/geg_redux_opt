@@ -246,10 +246,10 @@ async function compressImgs(
           maxResize
         )
       } catch (error) {
-        console.warn(
-          `\n  Warn: texconv.exe failed ❌, "${img.relPath}"\n` +
-            `  fallback to magick.exe ⭕ ...`
-        )
+        // console.warn(
+        //   `\n  Warn: texconv.exe failed ❌, "${img.relPath}"\n` +
+        //     `  fallback to magick.exe ⭕ ...`
+        // )
 
         await convertToDDS_magick(
           img,
@@ -259,9 +259,9 @@ async function compressImgs(
           maxResize
         )
 
-        console.log(
-          `  magick.exe fallback seccess ✅, "${img.relPath}"`
-        )
+        // console.log(
+        //   `  magick.exe fallback seccess ✅, "${img.relPath}"`
+        // )
       }
 
       // Remove extra temp renamed textures
