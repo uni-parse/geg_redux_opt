@@ -247,14 +247,20 @@ async function compressImgs(
         )
       } catch (error) {
         console.warn(
-          `\ntexconv.exe failed, fallback to magick.exe, "${img.relPath}"`
+          `\n  Warn: texconv.exe failed ❌, "${img.relPath}"\n` +
+            `  fallback to magick.exe ⭕ ...`
         )
+
         await convertToDDS_magick(
           img,
           outPath,
           resizePercent,
           minResize,
           maxResize
+        )
+
+        console.log(
+          `  magick.exe fallback seccess ✅, "${img.relPath}"`
         )
       }
 

@@ -9,9 +9,9 @@
   - Mix the above points and you will get **FREQUENT CRACHES**
 
 ## The Solution
-  - optimize 3d mech 3.2gb => 1.8gb+ (based on your settings)
   - optimize textures 5.4gb => 300mb+ (based on your settings)
-  - convert all texture to the memory friendly .dds (dxt1/dxt5)
+  - optimize 3d mech 3.2gb => 1.8gb+ (based on your settings)
+  - convert all texture to the memory friendly format .dds (dxt1/dxt5)
   - downScale overSized textures as 2k/4k (based on your settings)
   - this way, we will reduce memory leak craches
 
