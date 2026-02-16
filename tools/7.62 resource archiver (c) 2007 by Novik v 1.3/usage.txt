@@ -1,0 +1,7 @@
+unpack:
+cd unpack_path
+azp_exe_path x archive_path
+
+repack:
+cd unpack_path
+azp_exe_path ar archive_path *
