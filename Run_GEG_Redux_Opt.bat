@@ -127,27 +127,28 @@ echo              SUMMARY
 echo ========================================
 echo.
 echo Source Path:    !src_path!
-echo Selected Mode:  !select_mode!
 if "!select_mode!"=="1" (
-  echo Optimize:       3D Mech files only
+  echo Optimize mode:  3D Mech files only
   echo Float Decimals: !floatDecimal!
-  echo Target Path:    \ACTORS\ITEMS
+  echo Target Path:    \ACTORS\ITEMS    (3d mech)
+  echo                 \ACTORS\MONSTERS (3d mech repack .azp)
 ) else if "!select_mode!"=="2" (
-  echo Optimize:       Textures only
+  echo Optimize mode:  Textures only
   echo Resize Percent: !resizePercent!%%
   echo Min Dimension:  !minResize!px
   echo Max Dimension:  !maxResize!px
-  echo Target Paths:   \MEDIA
-  echo                 \BMP (without resizing)
+  echo Target Paths:   \MEDIA  (textures)
+  echo                 \BMP    (textures, no resize)
 ) else if "!select_mode!"=="3" (
-  echo Optimize:       Both 3D Mech and Textures
+  echo Optimize mode:  Both Textures and 3D Mech files
   echo Float Decimals: !floatDecimal!
   echo Resize Percent: !resizePercent!%%
   echo Min Dimension:  !minResize!px
   echo Max Dimension:  !maxResize!px
-  echo Target Paths:   \ACTORS\ITEMS
-  echo                 \MEDIA
-  echo                 \BMP (without resizing)
+  echo Target Paths:   \MEDIA           (textures)
+  echo                 \BMP             (textures, no resize)
+  echo                 \ACTORS\ITEMS    (3d mech)
+  echo                 \ACTORS\MONSTERS (3d mech, repack .azp)
 )
 echo.
 echo ========================================
