@@ -57,8 +57,9 @@
   - compatibility hack: rename back to org filename
 
 ## 3D Mesh Processing Pipeline
-  - target files: .act .att .inf
-  - target directories: `/ACTORS/ITEMS`
+  - target files: .act .att .inf | .act.# .lod# .hi .descr
+  - target directories: `/ACTORS/ITEMS`, `/ACTORS/MONSTERS`
+  - unpack/repack .azp files in `/ACTORS/MONSTERS`
   - clear `// line comments` and `/* multi-line comments */`
   - round floating-point coordinates ex:
     ```bash
