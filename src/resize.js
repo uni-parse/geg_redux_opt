@@ -1,8 +1,8 @@
 const path = require('node:path')
 
-// add other names you don't want to resize
+// add other textures paths you don't want to resize
 const exluded = [
-  'startgame.tga', // Main Menu "/MEDIA/SPLASHES/startgame.tga"
+  'MEDIA/SPLASHES/startgame.tga', // Main Menu
 ]
 
 // need tests to get the right resizes
@@ -17,7 +17,7 @@ function getResizeDimensions(
     width, // number
     height, // number
     basename, // ex "name"
-    filename, // ex "name.dds"
+    orgFilename, // ex "name.dds"
     orgPath, // apsolute path, ex "c:/.../media/items/name.dds"
     orgRelPath, // relative path, ex "./media/items/name.dds"
     orgExt, // ex .dds .tga .png .jpg .bmp
@@ -25,9 +25,11 @@ function getResizeDimensions(
 
   const imgDimension = Math.max(width, height)
 
-  const isExluded = exluded
-    .map(p => path.basename(p).toLowerCase())
-    .includes(filename.toLowerCase())
+  const isExluded = exluded.some(p =>
+    orgPath
+      .toLowerCase()
+      .includes(path.normalize(p).toLowerCase())
+  )
 
   if (
     isExluded ||
