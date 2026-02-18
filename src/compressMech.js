@@ -55,17 +55,31 @@ async function compressMech(
       const content = await fs.readFile(p, 'utf8')
 
       let optContent = content
-      if ([...attPaths, ...infPaths].includes(p))
+      let isTxt = true
+
+      if (attPaths.includes(p) || infPaths.includes(p))
         optContent = opt_ATT_INF_content(content, floatDecimal)
-      else if ([...hiPaths, ...descrPaths].includes(p))
+      else if (hiPaths.includes(p) || descrPaths.includes(p))
         optContent = opt_HI_DESCR_content(content)
-      else optContent = opt_ACT_content(content, floatDecimal)
+      else {
+        const header = content.slice(0, 16).toLowerCase()
+
+        // const binHeaders = ['xof 0303bin 0032']
+        // const txtHeaders = ['xof 0302txt 0032', 'xof 0303txt 0032']
+
+        isTxt =
+          header.includes('txt') && !header.includes('bin')
+
+        if (isTxt)
+          optContent = opt_ACT_content(content, floatDecimal)
+      }
 
       // Create output directory if needed
       const dir = path.dirname(outPath)
       await fs.mkdir(dir, { recursive: true })
 
-      await fs.writeFile(outPath, optContent, 'utf8')
+      if (isTxt) await fs.writeFile(outPath, optContent, 'utf8')
+      else await copyFile(p, outPath)
 
       const filename = path.basename(p)
       const orgSize = content.length
