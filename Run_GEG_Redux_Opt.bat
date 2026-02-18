@@ -48,16 +48,16 @@ if "!select_mode!"=="2" goto :ask_images
 cls
 set default_floatDecimal=4
 :ask_floatDecimal
-echo for 3d Mech optimization
-echo Enter number of decimals after float point (2~6)
+echo 3d Mech coordinates optimization
+echo example (6 to 4): 0.123456 opted to 0.1235
+echo Enter number of decimals after float point (3~6)
 echo or press Enter to default to: %default_floatDecimal%
-echo example: 0.123456 opted to 0.1235
 
 set /p floatDecimal="> "
 if "!floatDecimal!"=="" set floatDecimal=%default_floatDecimal%
-echo !floatDecimal!|findstr /r "^[2-6]$" >nul || (
+echo !floatDecimal!|findstr /r "^[3-6]$" >nul || (
   cls
-  echo Invalid input. Must be between 2 and 6.
+  echo Invalid input. Must be between 3 and 6.
   echo.
   goto :ask_floatDecimal
 )
