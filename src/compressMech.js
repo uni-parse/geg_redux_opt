@@ -222,9 +222,13 @@ function opt_HI_DESCR_content(content) {
   )
 }
 
-function roundFloat(float, maxDecimal = 3) {
+function roundFloat(float, maxDecimal = 2) {
   const num = parseFloat(float)
   const rounded =
     Math.round(num * 10 ** maxDecimal) / 10 ** maxDecimal
-  return rounded.toString()
+
+  let result = rounded.toString()
+  if (!result.includes('.')) result += '.0'
+
+  return result
 }
