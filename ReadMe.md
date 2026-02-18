@@ -3,7 +3,7 @@
 
 ## The Problems
   - Memory leak crash
-    -The Engine run on **32-bit** => **limited** to **4GB RAM**, even with [4GB patch](https://ntcore.com/4gb-patch/)
+    - The Engine run on **32-bit** => **limited** to **4GB RAM**, even with [4GB patch](https://ntcore.com/4gb-patch/)
     - The Engine have known **Memory Leaks** issue
     - The Mod added 6000+ unOptimized OverSized Textures (5.4gb)
     - Mix the above points and you will get **FREQUENT CRACHES**
