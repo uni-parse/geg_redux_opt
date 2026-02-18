@@ -1,19 +1,25 @@
 # GEG Redux Opt
 
 
-## The Problem
-  - The Engine run on **32-bit** => **limited** to **4GB RAM**, even with [4GB patch](https://ntcore.com/4gb-patch/)
-  - The Engine have known **Memory Leaks**
-  - The Mod added 6000+ unOptimized OverSized Textures (5.4gb)
-  - The Mod added 11000+ unOptimized 3d Mech text based (3.2gb)
-  - Mix the above points and you will get **FREQUENT CRACHES**
+## The Problems
+  - Memory leak crash
+    -The Engine run on **32-bit** => **limited** to **4GB RAM**, even with [4GB patch](https://ntcore.com/4gb-patch/)
+    - The Engine have known **Memory Leaks** issue
+    - The Mod added 6000+ unOptimized OverSized Textures (5.4gb)
+    - Mix the above points and you will get **FREQUENT CRACHES**
+  - Loading time
+    - The Engine load assets in **Sync mode** => use only 1 core of cpu
+    - No memory cache, reload assets Each time you go back to main menu
+    - The Mod added 34000+ 3d Mech files 3d Mech text based (4.8gb unpacked)
+    - Mix the above points and you will get **Slow Loading Time**
 
-## The Solution
-  - optimize textures 5.4gb => 300mb+ (based on your settings)
-  - optimize 3d mech 3.2gb => 1.8gb+ (based on your settings)
-  - convert all texture to the memory friendly format .dds (dxt1/dxt5)
-  - downScale overSized textures as 2k/4k (based on your settings)
-  - this way, we will reduce memory leak craches
+## The Solutions
+  - Reduce Memory Leak
+    - compress textures 5.5gb => ~450mb (based on your config)
+    - convert all texture to the memory-friendly format .dds (dxt1/dxt5)
+    - downScale overSized textures as 2k/4k (based on your config)
+  - Reduce Loading time
+    - opt 3d mech 4.8gb => ~3.2gb (based on your config)
 
 ## Requirments
   - install [node](https://nodejs.org/en/download/current) if you did not yet:
@@ -23,15 +29,17 @@
     ```bash
     git clone "https://github.com/uni-parse/geg_redux_opt"
     cd geg_redux_opt
-  - optional: if you do not want to resize a texture add it in `/geg_redux_opt/src/resize.js`
   - double click on `/Run_GEG_Redux_Opt.bat` and follow instructins
   - wait (depend on your hardware it may took 5~25min)
-  - backup will be generated (you can remove it):
+  - backup will be generated, (you can remove it at the end):
      ```bash
-     /Mods/GEG Redux/Data/_backup/ACTORS/ITEMS
      /Mods/GEG Redux/Data/_backup/MEDIA
      /Mods/GEG Redux/Data/_backup/BMP
-  
+     /Mods/GEG Redux/Data/_backup/ACTORS/ITEMS
+     /Mods/GEG Redux/Data/_backup/ACTORS/MONSTERS
+  - Warning ⚠️: keep backup if you want to test different resize configs
+  - optional: you can exclude some textures from resizing in `/geg_redux_opt/src/resize.js`
+
 ## Refresh Cache Tutorial
   - the script will automaticly rename old cache
     ```bash
@@ -63,7 +71,7 @@
   - clear `// line comments` and `/* multi-line comments */`
   - round floating-point coordinates ex:
     ```bash
-    -1.000000 => -1
+    -1.000000 => -1.0
      0.123456 =>  0.1235
   - clear white-space as: spaces, tabs, new lines
   - clear unnecessary tailing semicolons `;`
