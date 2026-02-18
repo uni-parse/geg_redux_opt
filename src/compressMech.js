@@ -144,9 +144,9 @@ function filterActPaths(allPaths) {
     else if (ext === '.hi') hiPaths.push(p)
     else if (ext === '.descr') descrPaths.push(p)
     else if (
-      ext === '.act' ||
-      // ext === '.actx' ||
       // ext === '.x' ||
+      // ext === '.actx' ||
+      ext === '.act' ||
       /\.act\.\d+$/.test(filename) || // endsWith .ACT.#
       /\.lod\d+$/.test(filename) // endsWith .LOD#
     )
@@ -165,21 +165,14 @@ function filterActPaths(allPaths) {
 }
 
 function opt_ACT_content(content, floatDecimal) {
-  const lines = content
-    // Remove /* ... */ comments
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    // Remove // comments
-    .replace(/\/\/.*$/gm, '')
+  const header = content.slice(0, 16)
+  const body = content
+    .slice(16)
+    .replace(/\/\*[\s\S]*?\*\//g, '') // Remove /* comments */
+    .replace(/\/\/.*$/gm, m => '') // Remove // comments
     .split(/\r?\n/)
-    // trim spaces at the start and end
-    .map(line => line.trim())
-    // remove empty lines
-    .filter(line => line.length > 0)
-
-  const header = lines[0]
-
-  const rest = lines
-    .slice(1)
+    .map(line => line.trim()) // trim spaces at the edges
+    .filter(line => line.length > 0) // remove empty lines
     .join('')
     // remove space around special charecters
     .replace(/\s*{\s*/g, '{')
@@ -190,49 +183,39 @@ function opt_ACT_content(content, floatDecimal) {
     .replaceAll(';,', ',')
     .replaceAll(';;', ';')
     // Optimize floats
-    .replace(/(-?\d*\.\d+)/g, m => roundFloat(m, floatDecimal))
+    .replace(/(-?\d+\.\d{6})(?!\d)/g, match =>
+      roundFloat(match, floatDecimal)
+    )
 
-  const optContent = `${header}\n${rest}`
-  return optContent
+  return `${header}\n${body}`
 }
 
 function opt_ATT_INF_content(content, floatDecimal) {
   return (
     content
-      // Remove /* ... */ comments
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      // Remove // comments
-      .replace(/\/\/.*$/gm, '')
+      .replace(/\/\*[\s\S]*?\*\//g, '') // Remove /* comments */
+      .replace(/\/\/.*$/gm, '') // Remove // comments
       // Optimize floats
-      .replace(/(-?\d*\.\d+)/g, m =>
-        roundFloat(m, floatDecimal)
+      .replace(/(-?\d+\.\d+)/g, match =>
+        roundFloat(match, floatDecimal)
       )
-      // split to lines arr
-      .split(/\r?\n/)
-      // trim spaces at the start and end
-      .map(line => line.trim())
-      // remove empty lines
-      .filter(line => line.length > 0)
-      // rejoin lines arr to str
-      .join('\n')
+      .split(/\r?\n/) // split to lines arr
+      .map(line => line.trim()) // trim spaces at the edges
+      .filter(line => line.length > 0) // remove empty lines
+      .join('\n') // rejoin lines arr to str
   )
 }
 
 function opt_HI_DESCR_content(content) {
   return (
     content
-      // Remove /* comments */
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      // Remove // comments
-      .replace(/\/\/.*$/gm, '')
-      // split to lines arr
-      .split(/\r?\n/)
+      .replace(/\/\*[\s\S]*?\*\//g, '') // Remove /* comments */
+      .replace(/\/\/.*$/gm, '') // Remove // comments
+      .split(/\r?\n/) // split to lines arr
       // trim extra spaces
       .map(line => line.trim().replace(/\s{2,}/g, ' '))
-      // remove empty lines
-      .filter(line => line.length > 0)
-      // rejoin lines arr to str
-      .join('\n')
+      .filter(line => line.length > 0) // remove empty lines
+      .join('\n') // rejoin lines arr to str
   )
 }
 
