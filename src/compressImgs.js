@@ -21,28 +21,16 @@ const {
   sizeToStr,
   getAllFilePaths,
   copyFile,
-  execAsync,
-  spawnAsync,
 } = require('./utilities')
+const {
+  magickIdentify,
+  magickVerbose,
+  magickConv,
+  texConv,
+} = require('./tools')
 const { getResizeDimensions } = require('./resize')
 
 module.exports = { compressImgs }
-
-const MAGICK_EXE_PATH = path.resolve(
-  __dirname,
-  '..',
-  'tools',
-  'ImageMagick-7.1.2-13-portable-Q16-HDRI-x64',
-  'magick.exe'
-)
-
-const TEXCONV_PATH = path.resolve(
-  __dirname,
-  '..',
-  'tools',
-  'texconv October 2025',
-  'texconv.exe'
-)
 
 const SHOW_MORE_LOGS = false
 
@@ -367,32 +355,19 @@ async function compressImgs(
 }
 
 async function getImageStatus(inputPath) {
-  try {
-    const result = await spawnAsync(MAGICK_EXE_PATH, [
-      'identify',
-      '-format',
-      '%B|%w|%h|%[depth]|%[channels]',
-      inputPath,
-    ])
+  const format = '%B|%w|%h|%[depth]|%[channels]'
+  const separator = '|'
 
-    if (result.stdout) {
-      const [size, width, height, depth, channels] =
-        result.stdout.trim().split('|')
+  const [size, width, height, depth, channels] =
+    await magickIdentify(inputPath, format, separator)
 
-      return {
-        size: parseInt(size),
-        width: parseInt(width),
-        height: parseInt(height),
-        dimensions: `${width}x${height}`,
-        depth: parseInt(depth),
-        hasAlpha: channels.toLowerCase().includes('a'),
-      }
-    }
-  } catch ({ error }) {
-    throw new Error(
-      `❌ Failed to stat file ${inputPath}:`,
-      error?.message
-    )
+  return {
+    size: parseInt(size),
+    width: parseInt(width),
+    height: parseInt(height),
+    dimensions: `${width}x${height}`,
+    depth: parseInt(depth),
+    hasAlpha: channels.toLowerCase().includes('a'),
   }
 }
 
@@ -403,19 +378,16 @@ async function convertToDDS_texconv(
   minResize,
   maxResize
 ) {
-  let command = `"${TEXCONV_PATH}"`
-  command += ` "${img.path}"`
-  command += ` -o "${path.dirname(outPath)}"`
-  command += ` --overwrite`
-  command += ' --single-proc' // disable multi thread
-  command += ' --file-type dds'
-  command += ' --mip-levels 4'
+  let flags = ''
+  flags += ' --single-proc' // disable multi thread
+  flags += ' --file-type dds'
+  flags += ' --mip-levels 4'
 
   if (!img.filename.includes(img.id))
-    command += ` --suffix "${img.id}"`
+    flags += ` --suffix "${img.id}"`
 
   const compression = await decideCompression(img)
-  command += ` --format ${compression}`
+  flags += ` --format ${compression}`
 
   const { canResize, newWidth, newHeight } =
     getResizeDimensions(
@@ -425,15 +397,12 @@ async function convertToDDS_texconv(
       maxResize
     )
   if (canResize) {
-    command += ` --width ${newWidth}`
-    command += ` --height ${newHeight}`
+    flags += ` --width ${newWidth}`
+    flags += ` --height ${newHeight}`
   }
 
-  try {
-    await execAsync(command)
-  } catch ({ error }) {
-    throw new Error(error)
-  }
+  const outDir = path.direname(outPath)
+  await texConv(img.path, flags, outDir)
 }
 
 async function convertToDDS_magick(
@@ -443,16 +412,15 @@ async function convertToDDS_magick(
   minResize,
   maxResize
 ) {
-  let command = `"${MAGICK_EXE_PATH}"`
-  command += ` "${img.path}"`
-  command += ' -define dds:mipmaps=4'
-  command += ' -define dds:fast-mipmaps=true'
-  command += ' -define dds:weighted=false'
+  let flags = ''
+  flags += ' -define dds:mipmaps=4'
+  flags += ' -define dds:fast-mipmaps=true'
+  flags += ' -define dds:weighted=false'
 
   const compression = await decideCompression(img)
-  command += ` -define dds:compression=${compression}`
+  flags += ` -define dds:compression=${compression}`
 
-  if (img.depth > 8) command += ' -depth 8'
+  if (img.depth > 8) flags += ' -depth 8'
 
   const { canResize, newWidth, newHeight } =
     getResizeDimensions(
@@ -461,39 +429,26 @@ async function convertToDDS_magick(
       minResize,
       maxResize
     )
-  if (canResize)
-    command += ` -resize "${newWidth}x${newHeight}>"`
+  if (canResize) flags += ` -resize "${newWidth}x${newHeight}>"`
 
-  command += ` "${outPath}"`
-
-  try {
-    await execAsync(command)
-  } catch ({ error }) {
-    throw new Error(error)
-  }
+  await magickConv(img.path, flags, outPath)
 }
 
 async function decideCompression(img) {
   if (!img.hasAlpha) return 'dxt1'
 
-  const result = await spawnAsync(MAGICK_EXE_PATH, [
-    img.path,
-    '-verbose',
-    'info:',
-  ])
-
-  const output = result.stdout
-  if (!output) return 'dxt5' // fallback
+  const verbose = await magickVerbose(img.path)
+  if (!verbose) return 'dxt5' // fallback
 
   // Check alpha channel depth
-  const depthMatch = output.match(/Alpha:\s+(\d+)-bit/)
+  const depthMatch = verbose.match(/Alpha:\s+(\d+)-bit/)
   if (!depthMatch) return 'dxt1' // No alpha channel
 
   const alphaDepth = parseInt(depthMatch[1])
   if (alphaDepth === 1) return 'dxt1' // Binary transparency
 
   // Check if alpha unused
-  const minMatch = output.match(
+  const minMatch = verbose.match(
     /Alpha:\s+min:\s+\d+\s+\(([\d.]+)\)/
   )
   if (minMatch) {

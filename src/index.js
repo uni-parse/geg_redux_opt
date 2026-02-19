@@ -4,7 +4,7 @@ const process = require('node:process')
 const os = require('node:os')
 const { compressImgs } = require('./compressImgs')
 const { compressMech } = require('./compressMech')
-const { unpackAZP, repackAZP } = require('./azp')
+const { unpackAZP, repackAZP } = require('./tools')
 const {
   checkDir,
   moveDir,
