@@ -90,10 +90,11 @@ async function compressImgs(
     const relPath = path.relative(baseSrcDir, p)
     const relDir = path.dirname(relPath)
 
-    return {
-      // duplication hack
-      id: `___${crypto?.randomUUID?.() ?? Math.random()}`,
+    // duplication hack
+    const id = `___${crypto?.randomUUID?.() ?? Math.random()}`
 
+    return {
+      id,
       basename,
       relDir,
 
