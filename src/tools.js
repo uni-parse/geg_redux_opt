@@ -48,10 +48,10 @@ async function magickIdentify(inputPath, format, separator) {
     else statusArr.push(stdout.trim())
 
     return statusArr
-  } catch ({ error }) {
+  } catch ({ error, stderr }) {
     throw new Error(
       `❌ Failed to identify texture ${inputPath}:`,
-      error?.message
+      stderr ?? error?.message
     )
   }
 }
@@ -65,10 +65,10 @@ async function magickVerbose(inputPath) {
     ])
 
     return result.stdout
-  } catch ({ error }) {
+  } catch ({ error, stderr }) {
     throw new Error(
       `❌ Failed to verbose texture ${inputPath}:`,
-      error?.message
+      stderr ?? error?.message
     )
   }
 }
@@ -89,8 +89,8 @@ async function magickConv(inputPath, flags, outPath) {
 
   try {
     await execAsync(command)
-  } catch ({ error }) {
-    throw error
+  } catch ({ error, stderr }) {
+    throw stderr ?? error
   }
 }
 
@@ -110,8 +110,8 @@ async function texConv(inputPath, flags, outDir) {
 
   try {
     await execAsync(command)
-  } catch ({ error }) {
-    throw error
+  } catch ({ error, stderr }) {
+    throw stderr ?? error
   }
 }
 
@@ -124,8 +124,8 @@ async function unpackAZP(azpPath, unpackDir) {
 
   try {
     await execAsync(command)
-  } catch ({ error }) {
-    throw error
+  } catch ({ error, stderr }) {
+    throw stderr ?? error
   }
 }
 
@@ -140,7 +140,7 @@ async function repackAZP(unpackDir, azpPath) {
 
   try {
     await execAsync(command)
-  } catch ({ error }) {
-    throw error
+  } catch ({ error, stderr }) {
+    throw stderr ?? error
   }
 }
