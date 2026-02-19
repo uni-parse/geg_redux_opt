@@ -88,7 +88,8 @@ async function magickConv(inputPath, flags, outPath) {
   }
 
   try {
-    await execAsync(command)
+    result = await execAsync(command)
+    return result
   } catch ({ error, stderr }) {
     throw stderr ?? error
   }
@@ -109,7 +110,8 @@ async function texConv(inputPath, flags, outDir) {
   }
 
   try {
-    await execAsync(command)
+    result = await execAsync(command)
+    return result
   } catch ({ error, stderr }) {
     throw stderr ?? error
   }
@@ -123,7 +125,8 @@ async function unpackAZP(azpPath, unpackDir) {
   command += ` "${AZP_EXE_PATH}" x "${azpPath}"`
 
   try {
-    await execAsync(command)
+    result = await execAsync(command)
+    return result
   } catch ({ error, stderr }) {
     throw stderr ?? error
   }
@@ -139,7 +142,8 @@ async function repackAZP(unpackDir, azpPath) {
   command += ` "${AZP_EXE_PATH}" ar "${azpPath}" *`
 
   try {
-    await execAsync(command)
+    result = await execAsync(command)
+    return result
   } catch ({ error, stderr }) {
     throw stderr ?? error
   }
