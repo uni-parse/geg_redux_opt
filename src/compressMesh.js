@@ -7,9 +7,9 @@ const {
   copyFile,
 } = require('./utilities')
 
-module.exports = { compressMech }
+module.exports = { compressMesh }
 
-async function compressMech(
+async function compressMesh(
   CORES_LIMIT,
   IO_LIMIT,
   baseSrcDir,
@@ -38,9 +38,9 @@ async function compressMech(
     }
   )
 
-  // opt mech files: .act .att .inf | .hi .descr .lod# .act.#
+  // opt mesh files: .act .att .inf | .hi .descr .lod# .act.#
   const results = await parallelProccess(
-    'Opt Mech files',
+    'Opt Mesh files',
     [
       ...actPaths,
       ...attPaths,
@@ -114,7 +114,7 @@ async function compressMech(
 
   console.log(
     `\n${'═'.repeat(60)}\n` +
-      `  3d Mech optimization Summary\n` +
+      `  3d Mesh optimization Summary\n` +
       `📊 Total Size: ${sizeToStr(orgSize)} → ${sizeToStr(
         optSize
       )}\n` +

@@ -3,7 +3,7 @@ const path = require('node:path')
 const process = require('node:process')
 const os = require('node:os')
 const { compressImgs } = require('./compressImgs')
-const { compressMech } = require('./compressMech')
+const { compressMesh } = require('./compressMesh')
 const { unpackAZP, repackAZP } = require('./tools')
 const {
   checkDir,
@@ -46,7 +46,7 @@ async function main(basePath, selectMode, options) {
   const timerLabel = 'Total Time'
   console.time(timerLabel)
 
-  const optMechOnly = selectMode === 1
+  const optMeshOnly = selectMode === 1
   const optTexturesOnly = selectMode === 2
   const optAll = selectMode === 3
 
@@ -81,26 +81,26 @@ async function main(basePath, selectMode, options) {
     const canOptBmp = isValidBmpSrc || isValidBmpBackup
 
     // "/ACTORS/ITEMS"
-    const mechRelDir = 'ACTORS/ITEMS'
-    const mechSrc = path.resolve(basePath, mechRelDir)
-    const mechTemp = path.resolve(baseTempDir, mechRelDir)
-    const mechBackup = path.resolve(baseBackupDir, mechRelDir)
-    const isValidMechSrc = await checkDir(mechSrc)
-    const isValidMechBackup = await checkDir(mechBackup)
-    const canOptMech = isValidMechSrc || isValidMechBackup
+    const meshRelDir = 'ACTORS/ITEMS'
+    const meshSrc = path.resolve(basePath, meshRelDir)
+    const meshTemp = path.resolve(baseTempDir, meshRelDir)
+    const meshBackup = path.resolve(baseBackupDir, meshRelDir)
+    const isValidMeshSrc = await checkDir(meshSrc)
+    const isValidMeshBackup = await checkDir(meshBackup)
+    const canOptMesh = isValidMeshSrc || isValidMeshBackup
 
     // "/ACTORS/MONSTERS"
     const azpRelDir = 'ACTORS/MONSTERS'
-    const azpMechSrc = path.resolve(basePath, azpRelDir)
-    const azpMechTemp = path.resolve(baseTempDir, azpRelDir)
-    const azpMechBackup = path.resolve(baseBackupDir, azpRelDir)
-    const isValidAzpMechSrc = await checkDir(azpMechSrc)
-    const isValidAzpMechBackup = await checkDir(azpMechBackup)
-    const canOptAzpMech =
-      isValidAzpMechSrc || isValidAzpMechBackup
+    const azpMeshSrc = path.resolve(basePath, azpRelDir)
+    const azpMeshTemp = path.resolve(baseTempDir, azpRelDir)
+    const azpMeshBackup = path.resolve(baseBackupDir, azpRelDir)
+    const isValidAzpMeshSrc = await checkDir(azpMeshSrc)
+    const isValidAzpMeshBackup = await checkDir(azpMeshBackup)
+    const canOptAzpMesh =
+      isValidAzpMeshSrc || isValidAzpMeshBackup
 
     // check missing directories ------------------------------
-    if (optMechOnly && !canOptMech && !canOptAzpMech) {
+    if (optMeshOnly && !canOptMesh && !canOptAzpMesh) {
       console.warn(
         `invalid basePath "${basePath}"\n` +
           `missing sub directories:\n` +
@@ -126,8 +126,8 @@ async function main(basePath, selectMode, options) {
       optAll &&
       !canOptMedia &&
       !canOptBmp &&
-      !canOptMech &&
-      !canOptAzpMech
+      !canOptMesh &&
+      !canOptAzpMesh
     ) {
       console.warn(
         `invalid basePath "${basePath}"\n` +
@@ -143,14 +143,14 @@ async function main(basePath, selectMode, options) {
 
     // create backup ------------------------------------------
     if (!optTexturesOnly) {
-      if (isValidMechSrc && !isValidMechBackup)
-        await moveDir(mechSrc, mechBackup)
+      if (isValidMeshSrc && !isValidMeshBackup)
+        await moveDir(meshSrc, meshBackup)
 
-      if (isValidAzpMechSrc && !isValidAzpMechBackup)
-        await moveDir(azpMechSrc, azpMechBackup)
+      if (isValidAzpMeshSrc && !isValidAzpMeshBackup)
+        await moveDir(azpMeshSrc, azpMeshBackup)
     }
 
-    if (!optMechOnly) {
+    if (!optMeshOnly) {
       if (isValidMediaSrc && !isValidMediaBackup)
         await moveDir(mediaSrc, mediaBackup)
 
@@ -162,28 +162,28 @@ async function main(basePath, selectMode, options) {
     if (await checkDir(baseTempDir))
       await removeDir(baseTempDir)
 
-    // opt mech -----------------------------------------------
+    // opt mesh -----------------------------------------------
     if (!optTexturesOnly) {
-      if (canOptMech)
-        await compressMech(
+      if (canOptMesh)
+        await compressMesh(
           CORES_LIMIT,
           IO_LIMIT,
-          mechBackup,
-          mechTemp,
+          meshBackup,
+          meshTemp,
           options.floatDecimal
         )
 
-      if (canOptAzpMech) {
-        const baseUnpackDir = path.join(azpMechTemp, '_unpack')
+      if (canOptAzpMesh) {
+        const baseUnpackDir = path.join(azpMeshTemp, '_unpack')
         const baseUnpackOptDir = path.join(
-          azpMechTemp,
+          azpMeshTemp,
           '_unpack_opt'
         )
 
         // unpack
-        const azpPaths = await getAllFilePaths(azpMechBackup)
+        const azpPaths = await getAllFilePaths(azpMeshBackup)
         const unpackDirs = await parallelProccess(
-          'unpack mech .azp files',
+          'unpack mesh .azp files',
           azpPaths,
           CORES_LIMIT,
           async azpPath => {
@@ -196,8 +196,8 @@ async function main(basePath, selectMode, options) {
           }
         )
 
-        // opt unpacked mech files
-        await compressMech(
+        // opt unpacked mesh files
+        await compressMesh(
           CORES_LIMIT,
           IO_LIMIT,
           baseUnpackDir,
@@ -210,13 +210,13 @@ async function main(basePath, selectMode, options) {
           unpackDir.replace(baseUnpackDir, baseUnpackOptDir)
         )
         await parallelProccess(
-          'repack mech .azp files',
+          'repack mesh .azp files',
           unpackOptDirs,
           CORES_LIMIT,
           async unpackOptDir => {
             const basename = path.basename(unpackOptDir)
             const azpPath = path.join(
-              azpMechTemp,
+              azpMeshTemp,
               basename + '.azp'
             )
 
@@ -233,7 +233,7 @@ async function main(basePath, selectMode, options) {
     }
 
     // opt textures -------------------------------------------
-    if (!optMechOnly) {
+    if (!optMeshOnly) {
       if (canOptBmp)
         await compressImgs(
           CORES_LIMIT,
@@ -260,11 +260,11 @@ async function main(basePath, selectMode, options) {
 
     // save ---------------------------------------------------
     if (!optTexturesOnly) {
-      if (canOptMech) await moveDir(mechTemp, mechSrc)
-      if (canOptAzpMech) await moveDir(azpMechTemp, azpMechSrc)
+      if (canOptMesh) await moveDir(meshTemp, meshSrc)
+      if (canOptAzpMesh) await moveDir(azpMeshTemp, azpMeshSrc)
     }
 
-    if (!optMechOnly) {
+    if (!optMeshOnly) {
       if (canOptMedia) await moveDir(mediaTemp, mediaSrc)
       if (canOptBmp) await moveDir(bmpTemp, bmpSrc)
     }

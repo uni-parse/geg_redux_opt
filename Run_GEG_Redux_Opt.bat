@@ -26,9 +26,9 @@ if "!src_path:~-1!"=="\" set "src_path=!src_path:~0,-1!"
 cls
 :select_mode
 echo Select what to optimize:
-echo [1] 3D Mech files only
+echo [1] 3D Mesh files only
 echo [2] Textures only
-echo [3] Both 3D Mech and Textures
+echo [3] Both 3D Mesh and Textures
 echo.
 echo or press Enter to default to: 3 (Both)
 echo.
@@ -48,7 +48,7 @@ if "!select_mode!"=="2" goto :ask_images
 cls
 set default_floatDecimal=4
 :ask_floatDecimal
-echo 3d Mech coordinates optimization
+echo 3d Mesh coordinates optimization
 echo example (6 to 4): 0.123456 opted to 0.1235
 echo Enter number of decimals after float point (3~6)
 echo or press Enter to default to: %default_floatDecimal%
@@ -128,10 +128,10 @@ echo ========================================
 echo.
 echo Source Path:    !src_path!
 if "!select_mode!"=="1" (
-  echo Optimize mode:  3D Mech files only
+  echo Optimize mode:  3D Mesh files only
   echo Float Decimals: !floatDecimal!
-  echo Target Path:    \ACTORS\ITEMS    [3d mech]
-  echo                 \ACTORS\MONSTERS [3d mech repack .azp]
+  echo Target Path:    \ACTORS\ITEMS    [3d mesh]
+  echo                 \ACTORS\MONSTERS [3d mesh repack .azp]
 ) else if "!select_mode!"=="2" (
   echo Optimize mode:  Textures only
   echo Resize Percent: !resizePercent!%%
@@ -140,15 +140,15 @@ if "!select_mode!"=="1" (
   echo Target Paths:   \MEDIA  [textures]
   echo                 \BMP    [textures, no resize]
 ) else if "!select_mode!"=="3" (
-  echo Optimize mode:  Both Textures and 3D Mech files
+  echo Optimize mode:  Both Textures and 3D Mesh files
   echo Float Decimals: !floatDecimal!
   echo Resize Percent: !resizePercent!%%
   echo Min Dimension:  !minResize!px
   echo Max Dimension:  !maxResize!px
   echo Target Paths:   \MEDIA           [textures]
   echo                 \BMP             [textures, no resize]
-  echo                 \ACTORS\ITEMS    [3d mech]
-  echo                 \ACTORS\MONSTERS [3d mech, repack .azp]
+  echo                 \ACTORS\ITEMS    [3d mesh]
+  echo                 \ACTORS\MONSTERS [3d mesh, repack .azp]
 )
 echo.
 echo ========================================

@@ -10,7 +10,7 @@
   - Loading time
     - The Engine load assets in **Sync mode** => use only 1 core of cpu
     - No memory cache, reload assets Each time you go back to main menu
-    - The Mod added 34000+ 3d Mech files 3d Mech text based (4.8gb unpacked)
+    - The Mod added 34000+ text based 3d Mesh files (4.8gb unpacked)
     - Mix the above points and you will get **Slow Loading Time**
 
 ## The Solutions
@@ -19,7 +19,7 @@
     - convert all texture to the memory-friendly format .dds (dxt1/dxt5)
     - downScale overSized textures as 2k/4k (based on your config)
   - Reduce Loading time
-    - opt 3d mech 4.8gb => ~3.2gb (based on your config)
+    - opt 3d mesh 4.8gb => ~3.2gb (based on your config)
 
 ## Requirments
   - install [node](https://nodejs.org/en/download/current) if you did not yet:
