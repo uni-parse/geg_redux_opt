@@ -235,22 +235,33 @@ async function compressImgs(
           maxResize
         )
       } catch (error) {
-        // console.warn(
-        //   `\n  Warn: texconv.exe failed ❌, "${img.relPath}"\n` +
-        //     `  fallback to magick.exe ⭕ ...`
-        // )
+        if (SHOW_MORE_LOGS)
+          console.warn(
+            `\n  Warn: texconv.exe failed ❌, "${img.relPath}"\n` +
+              `  fallback to magick.exe ...`
+          )
 
-        await convertToDDS_magick(
-          img,
-          outPath,
-          resizePercent,
-          minResize,
-          maxResize
-        )
+        try {
+          await convertToDDS_magick(
+            img,
+            outPath,
+            resizePercent,
+            minResize,
+            maxResize
+          )
 
-        // console.log(
-        //   `  magick.exe fallback seccess ✅, "${img.relPath}"`
-        // )
+          if (SHOW_MORE_LOGS)
+            console.log(
+              `  magick.exe fallback seccess ✅, "${img.relPath}"`
+            )
+        } catch (error) {
+          if (SHOW_MORE_LOGS)
+            console.warn(
+              `  Warn: magick.exe failed ❌, "${img.relPath}"\n` +
+                `  fallback to copy`
+            )
+          await copyFile(img.path, outPath)
+        }
       }
 
       // Remove extra temp renamed textures
