@@ -62,7 +62,10 @@ async function compressMesh(
       const outPath = p.replace(baseSrcDir, baseDestDir)
       const content = await fs.readFile(p, 'utf8')
 
-      const optContent = optMeshConfigContent(content)
+      const optContent = optMeshConfigContent(
+        content,
+        floatDecimal
+      )
 
       // Create output directory if needed
       const dir = path.dirname(outPath)
@@ -133,20 +136,23 @@ async function compressMesh(
   return { orgSize, optSize, savedSize, savedPercent }
 }
 
-function optMeshConfigContent(content) {
+function optMeshConfigContent(content, floatDecimal) {
   return (
     content
-      .replace(/\/\/.*$/gm, '') // Remove // comments
-      .replace(/\/\*[\s\S]*?\*\//g, '') // Remove /* comments */
-      // Optimize floats
-      .replace(/(-?\d+\.\d+)/g, matchFloat => {
-        const num = parseFloat(matchFloat).toString()
-        return num.includes('.') ? num : `${num}.0`
-      })
       .split(/\r?\n/)
-      .map(line => line.trim().replace(/\s{2,}/g, ' ')) // trim extra spaces
+      .map(
+        line =>
+          line
+            .split('//')[0] // Remove // Comments
+            .trim() // trim extra spaces
+            .replace(/\s{2,}/g, ' ') // remove dulplicate spaces
+      )
       .filter(line => line.length > 0) // remove empty lines
       .join('\n')
+      // Optimize floats
+      .replace(/(-?\d+\.\d+)/g, match =>
+        roundFloat(match, floatDecimal)
+      )
   )
 }
 
@@ -154,10 +160,14 @@ function optMeshContent(content, floatDecimal) {
   const header = content.slice(0, 16)
   const body = content
     .slice(16)
-    .replace(/\/\*[\s\S]*?\*\//g, '') // Remove /* comments */
-    .replace(/\/\/.*$/gm, m => '') // Remove // comments
     .split(/\r?\n/)
-    .map(line => line.trim()) // trim spaces at the edges
+    .map(
+      line =>
+        line
+          .split('//')[0] // Remove // Comments
+          .trim() // trim extra spaces
+          .replace(/\s{2,}/g, ' ') // remove dulplicate spaces
+    )
     .filter(line => line.length > 0) // remove empty lines
     .join('')
     // remove space around special charecters
@@ -177,12 +187,12 @@ function optMeshContent(content, floatDecimal) {
 }
 
 function roundFloat(float, maxDecimal = 4) {
-  const num = parseFloat(float)
-  const rounded =
-    Math.round(num * 10 ** maxDecimal) / 10 ** maxDecimal
+  const roundFactor = 10 ** maxDecimal
 
-  let result = rounded.toString()
-  if (!result.includes('.')) result += '.0'
+  let num = parseFloat(float)
+  num = Math.round(num * roundFactor) / roundFactor
+  num = num.toString()
+  num = num.includes('.') ? num : `${num}.0`
 
-  return result
+  return num
 }

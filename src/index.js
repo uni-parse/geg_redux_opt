@@ -217,7 +217,7 @@ async function main(basePath, selectMode, options) {
             const basename = path.basename(unpackOptDir)
             const azpPath = path.join(
               azpMeshTemp,
-              basename + '.azp'
+              `${basename}.azp`
             )
 
             await repackAZP(unpackOptDir, azpPath)

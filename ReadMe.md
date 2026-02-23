@@ -68,7 +68,7 @@
   - target files: .act .att .inf | .act.# .lod# .hi .descr
   - target directories: `/ACTORS/ITEMS`, `/ACTORS/MONSTERS`
   - unpack/repack .azp files in `/ACTORS/MONSTERS`
-  - clear `// line comments` and `/* multi-line comments */`
+  - clear `// comments`
   - round floating-point coordinates ex:
     ```bash
     -1.000000 => -1.0

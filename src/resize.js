@@ -30,12 +30,11 @@ function getResizeDimensions(
       .toLowerCase()
       .includes(path.normalize(p).toLowerCase())
   )
+  const isSmall = imgDimension <= minResize
+  const isPreserved =
+    resizePercent === 100 && imgDimension <= maxResize
 
-  if (
-    isExluded ||
-    imgDimension <= minResize ||
-    (resizePercent === 100 && imgDimension <= maxResize)
-  )
+  if (isExluded || isSmall || isPreserved)
     return { canResize: false }
 
   let newDimension = imgDimension * (resizePercent / 100)
