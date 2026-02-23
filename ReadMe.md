@@ -70,6 +70,7 @@
   - target directories: `/ACTORS/ITEMS`, `/ACTORS/MONSTERS`
   - unpack/repack .azp files in `/ACTORS/MONSTERS`
   - convert 0303txt mesh files to binary
+    - by MeshConvert.exe utility from [DirectX sdk june 2010](https://archive.org/details/dxsdk_jun10)
   - opt text of configs and 0302txt mesh files
     - clear `// comments`
     - clear white-space as: spaces, tabs, new lines
