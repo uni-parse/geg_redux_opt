@@ -7,6 +7,7 @@ module.exports = {
   magickVerbose,
   magickConv,
   texConv,
+  meshConv,
   unpackAZP,
   repackAZP,
 }
@@ -23,6 +24,12 @@ const TEXCONV_EXE_PATH = path.join(
   TOOLS_DIR,
   'texconv October 2025',
   'texconv.exe'
+)
+
+const MESHCONVERT_EXE_PATH = path.join(
+  TOOLS_DIR,
+  'Microsoft DirectX SDK (June 2010)',
+  'MeshConvert.exe'
 )
 
 const AZP_EXE_PATH = path.join(
@@ -116,6 +123,42 @@ async function texConv(inputPath, flags, outDir) {
   } catch ({ error, stderr }) {
     if (stderr?.trim()) throw new Error(stderr.trim())
     else throw error
+  }
+}
+
+async function meshConv(inputPath, flags, outPath) {
+  let command = `"${MESHCONVERT_EXE_PATH}"`
+  command += ` "${inputPath}"`
+
+  if (flags) command += ` ${flags}`
+  // to binary: -x
+  // to txt: -xt
+
+  if (outPath) {
+    // Create output directory if needed
+    const dir = path.dirname(outPath)
+    await fs.mkdir(dir, { recursive: true })
+
+    command += ` -o "${outPath}"`
+    command += ` -y`
+  }
+
+  try {
+    result = await execAsync(command)
+
+    if (
+      result.stdout?.trim() ===
+      'Cannot Load specified input file'
+    )
+      throw { stderr: result.stdout }
+
+    return result
+  } catch ({ error, stderr }) {
+    throw new Error(
+      `MeshConvert.exe Failed:\n${
+        stderr?.trim() || error?.message
+      }`
+    )
   }
 }
 

@@ -6,6 +6,7 @@ const {
   getAllFilePaths,
   copyFile,
 } = require('./utilities')
+const { meshConv } = require('./tools')
 
 module.exports = { compressMesh }
 
@@ -31,7 +32,7 @@ async function compressMesh(
       ext
     )
     const isMesh =
-      ['.act', '.actx', '.x'].includes(ext) ||
+      ['.act', '.actx', '.x', '.mesh'].includes(ext) ||
       /\.act\.\d+$/.test(filename) || // endsWith .ACT.#
       /\.lod\d+$/.test(filename) // endsWith .LOD#
 
@@ -89,7 +90,12 @@ async function compressMesh(
       const filename = path.basename(p)
       const outPath = p.replace(baseSrcDir, baseDestDir)
 
+      // Create output directory if needed
+      const dir = path.dirname(outPath)
+      await fs.mkdir(dir, { recursive: true })
+
       const content = await fs.readFile(p, 'utf8')
+      let optContent = content
 
       // const binHeaders = ['xof 0303bin 0032']
       // const txtHeaders = ['xof 0302txt 0032', 'xof 0303txt 0032']
@@ -97,19 +103,46 @@ async function compressMesh(
       const isTxt =
         header.includes('txt') && !header.includes('bin')
 
-      const optContent = isTxt
-        ? optMeshContent(content, floatDecimal)
-        : content
+      if (isTxt) {
+        // convert to binary
+        let isSupportedTxt0303 = header === 'xof 0303txt 0032'
+        if (isSupportedTxt0303) {
+          // compatibility hack: MeshConvert.exe require .x
+          const ext = path.extname(p).toLowerCase()
+          const isX = ext === '.x'
+          const xPath = isX ? p : `${outPath}.x`
 
-      // Create output directory if needed
-      const dir = path.dirname(outPath)
-      await fs.mkdir(dir, { recursive: true })
+          // create temp .x
+          if (!isX) await copyFile(p, xPath)
 
-      if (isTxt) await fs.writeFile(outPath, optContent, 'utf8')
-      else await copyFile(p, outPath)
+          try {
+            await meshConv(xPath, '-x', outPath)
+          } catch (error) {
+            if (SHOW_MORE_LOGS)
+              console.warn(
+                `\n  Warn: unsupported 0303txt mesh file: "${filename}"\n` +
+                  `  "${p}"\n` +
+                  `  fallback to opt text`
+              )
+
+            isSupportedTxt0303 = false
+          }
+
+          // remove temp .x
+          if (!isX) await fs.unlink(xPath)
+        }
+
+        // opt text
+        if (!isSupportedTxt0303) {
+          optContent = optMeshContent(content, floatDecimal)
+          await fs.writeFile(outPath, optContent, 'utf8')
+        }
+      } else await copyFile(p, outPath)
 
       const orgSize = content.length
-      const optSize = optContent.length
+      const optSize = isSupportedTxt0303
+        ? (await fs.stat(outPath)).size
+        : optContent.length
 
       return { filename, orgSize, optSize }
     }

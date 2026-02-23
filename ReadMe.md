@@ -55,8 +55,8 @@
   - from now on, shops loading time will be fast
 
 ## Texture Processing Pipeline
-  - target textures: .tga .dds .bmp .png .jpg
-  - target directories: `/MEDIA`, `/BMP`
+  - textures: .tga .dds .bmp .png .jpg
+  - directories: `/MEDIA`, `/BMP`
   - skip/copy unsupported textures as .vtf ...
   - rename misFormated textures (required by [magick.exe](https://imagemagick.org/))
   - repair corrupt .dds headers (required by [magick.exe](https://imagemagick.org/))
@@ -65,13 +65,16 @@
   - compatibility hack: rename back to org filename
 
 ## 3D Mesh Processing Pipeline
-  - target files: .act .att .inf | .act.# .lod# .hi .descr
+  - mesh files: .x .mesh .act .actx .act.# .lod#
+  - config files: .att .inf .hi .descr
   - target directories: `/ACTORS/ITEMS`, `/ACTORS/MONSTERS`
   - unpack/repack .azp files in `/ACTORS/MONSTERS`
-  - clear `// comments`
-  - round floating-point coordinates ex:
-    ```bash
-    -1.000000 => -1.0
-     0.123456 =>  0.1235
-  - clear white-space as: spaces, tabs, new lines
-  - clear unnecessary tailing semicolons `;`
+  - convert 0303txt mesh files to binary
+  - opt text of configs and 0302txt mesh files
+    - clear `// comments`
+    - clear white-space as: spaces, tabs, new lines
+    - clear unnecessary tailing semicolons `;`
+    - round floating-point coordinates ex:
+      ```bash
+       1.000000 =>  1.0
+      -0.123456 => -0.1235
