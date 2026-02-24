@@ -43,41 +43,24 @@ async function magickIdentify(inputPath, format, separator) {
   if (format) flags.push[('-format', format)]
   flags.push(inputPath)
 
-  try {
-    const result = await spawnAsync(MAGICK_EXE_PATH, flags)
-    const { stdout } = result
-    if (!stdout) return []
+  const output = await spawnAsync(MAGICK_EXE_PATH, flags)
 
-    const statusArr = []
+  if (!output) return []
 
-    if (separator)
-      statusArr.push(...stdout.trim().split(separator))
-    else statusArr.push(stdout.trim())
+  const statusArr = []
 
-    return statusArr
-  } catch ({ error, stderr }) {
-    throw new Error(
-      `❌ Failed to identify texture ${inputPath}:`,
-      stderr ?? error?.message
-    )
-  }
+  if (separator) statusArr.push(...output.split(separator))
+  else statusArr.push(output)
+
+  return statusArr
 }
 
 async function magickVerbose(inputPath) {
-  try {
-    const result = await spawnAsync(MAGICK_EXE_PATH, [
-      inputPath,
-      '-verbose',
-      'info:',
-    ])
-
-    return result.stdout
-  } catch ({ error, stderr }) {
-    throw new Error(
-      `❌ Failed to verbose texture ${inputPath}:`,
-      stderr ?? error?.message
-    )
-  }
+  return await spawnAsync(MAGICK_EXE_PATH, [
+    inputPath,
+    '-verbose',
+    'info:',
+  ])
 }
 
 async function magickConv(inputPath, flags, outPath) {
@@ -94,13 +77,7 @@ async function magickConv(inputPath, flags, outPath) {
     command += ` "${outPath}"`
   }
 
-  try {
-    result = await execAsync(command)
-    return result
-  } catch ({ error, stderr }) {
-    if (stderr?.trim()) throw new Error(stderr.trim())
-    else throw error
-  }
+  return await execAsync(command)
 }
 
 async function texConv(inputPath, flags, outDir) {
@@ -117,13 +94,7 @@ async function texConv(inputPath, flags, outDir) {
     command += ' --overwrite'
   }
 
-  try {
-    result = await execAsync(command)
-    return result
-  } catch ({ error, stderr }) {
-    if (stderr?.trim()) throw new Error(stderr.trim())
-    else throw error
-  }
+  return await execAsync(command)
 }
 
 async function meshConv(inputPath, flags, outPath) {
@@ -143,23 +114,12 @@ async function meshConv(inputPath, flags, outPath) {
     command += ` -y`
   }
 
-  try {
-    result = await execAsync(command)
+  const output = await execAsync(command)
 
-    if (
-      result.stdout?.trim() ===
-      'Cannot Load specified input file'
-    )
-      throw { stderr: result.stdout }
+  if (output === 'Cannot Load specified input file')
+    throw new Error(output)
 
-    return result
-  } catch ({ error, stderr }) {
-    throw new Error(
-      `MeshConvert.exe Failed:\n${
-        stderr?.trim() || error?.message
-      }`
-    )
-  }
+  return output
 }
 
 async function unpackAZP(azpPath, unpackDir) {
@@ -169,13 +129,7 @@ async function unpackAZP(azpPath, unpackDir) {
   command += ` &&`
   command += ` "${AZP_EXE_PATH}" x "${azpPath}"`
 
-  try {
-    result = await execAsync(command)
-    return result
-  } catch ({ error, stderr }) {
-    if (stderr?.trim()) throw new Error(stderr.trim())
-    else throw error
-  }
+  return await execAsync(command)
 }
 
 async function repackAZP(unpackDir, azpPath) {
@@ -187,11 +141,5 @@ async function repackAZP(unpackDir, azpPath) {
   command += ` &&`
   command += ` "${AZP_EXE_PATH}" ar "${azpPath}" *`
 
-  try {
-    result = await execAsync(command)
-    return result
-  } catch ({ error, stderr }) {
-    if (stderr?.trim()) throw new Error(stderr.trim())
-    else throw error
-  }
+  return await execAsync(command)
 }

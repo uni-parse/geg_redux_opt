@@ -165,8 +165,10 @@ async function removeDir(src) {
 function execAsync(command) {
   return new Promise((resolve, reject) => {
     exec(command, (error, stdout, stderr) => {
-      if (error) reject({ error, stderr })
-      else resolve({ stdout, stderr })
+      if (error) {
+        if (stderr?.trim()) error.message = stderr.trim()
+        reject(error)
+      } else resolve(stdout?.trim())
     })
   })
 }
@@ -177,13 +179,30 @@ function spawnAsync(command, args, options = {}) {
     let stdout = ''
     let stderr = ''
 
-    child.stdout.on('data', data => (stdout += data.toString()))
-    child.stderr.on('data', data => (stderr += data.toString()))
-    child.on('close', code => {
-      if (code === 0) resolve({ stdout, stderr })
-      else reject({ code, stderr, stdout })
+    child.stdout.on('data', data => {
+      stdout += data.toString()
     })
-    child.on('error', error => reject({ error, stderr }))
+
+    child.stderr.on('data', data => {
+      stderr += data.toString()
+    })
+
+    child.on('error', error => {
+      if (stderr?.trim()) error.message = stderr.trim()
+      reject(error)
+    })
+
+    child.on('close', code => {
+      if (code === 0) resolve(stdout?.trim())
+      else {
+        const error = new Error(
+          `Command failed with exit code ${code}`
+        )
+        if (stderr?.trim()) error.message = stderr.trim()
+        error.code = code
+        reject(error)
+      }
+    })
   })
 }
 
