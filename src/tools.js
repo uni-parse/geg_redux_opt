@@ -40,7 +40,7 @@ const AZP_EXE_PATH = path.join(
 
 async function magickIdentify(inputPath, format, separator) {
   const flags = ['identify']
-  if (format) flags.push[('-format', format)]
+  if (format) flags.push('-format', format)
   flags.push(inputPath)
 
   const output = await spawnAsync(MAGICK_EXE_PATH, flags)
