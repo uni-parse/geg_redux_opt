@@ -55,7 +55,7 @@
   - from now on, shops loading time will be fast
 
 ## Texture Processing Pipeline
-  - textures: .tga .dds .bmp .png .jpg
+  - textures: .tga .dds .bmp .png .jpg .jpeg .webp
   - directories: `/MEDIA`, `/BMP`
   - skip/copy unsupported textures as .vtf ...
   - rename misFormated textures (required by [magick.exe](https://imagemagick.org/))

@@ -41,6 +41,7 @@ const EXTENSIONS = [
   '.png',
   '.jpg',
   '.jpeg',
+  '.webp',
   // '.vtf', // unsupported, so it can only copy
 ]
 
