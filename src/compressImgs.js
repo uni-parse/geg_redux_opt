@@ -478,9 +478,9 @@ async function detectImgFormat(inputPath) {
   try {
     fileHandler = await fs.open(inputPath, 'r')
 
-    const buf = Buffer.alloc(5)
-    const { bytesRead } = await fileHandler.read(buf, 0, 5, 0)
-    if (bytesRead !== 5) throw new Error('invalid bytesRead')
+    const buf = Buffer.alloc(12)
+    const { bytesRead } = await fileHandler.read(buf, 0, 12, 0)
+    if (bytesRead !== 12) throw new Error('invalid bytesRead')
 
     if (buf.slice(0, 4).toString() === 'DDS ') return '.dds'
     if (buf.slice(1, 4).toString() === 'PNG') return '.png'
@@ -488,6 +488,11 @@ async function detectImgFormat(inputPath) {
     if (buf.slice(0, 3).toString() === 'GIF') return '.gif'
     if (buf.slice(0, 3).equals(Buffer.from([0xff, 0xd8, 0xff])))
       return '.jpg'
+    if (
+      buf.slice(0, 4).toString() === 'RIFF' &&
+      buf.slice(8, 12).toString() === 'WEBP'
+    )
+      return '.webp'
 
     const isTGA = [0, 1, 2, 3, 9, 10, 11].includes(buf[2])
     if (isTGA) return '.tga'
@@ -495,7 +500,7 @@ async function detectImgFormat(inputPath) {
     const hexStr = buf.toString('hex').match(/.{2}/g).join(' ')
     console.warn(
       `\nunknown actual format of "${inputPath}"\n` +
-        `first 5 bytes: "${hexStr}" : "${buf.toString()}"\n` +
+        `first 12 bytes: "${hexStr}" : "${buf.toString()}"\n` +
         `fallback to .tga`
     )
     return '.tga' // fallback to .tga
