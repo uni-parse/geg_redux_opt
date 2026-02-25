@@ -103,9 +103,10 @@ async function compressMesh(
       const isTxt =
         header.includes('txt') && !header.includes('bin')
 
+      let isSupportedTxt0303 = header.includes('0303txt')
+
       if (isTxt) {
         // convert to binary
-        let isSupportedTxt0303 = header === 'xof 0303txt 0032'
         if (isSupportedTxt0303) {
           // compatibility hack: MeshConvert.exe require .x
           const ext = path.extname(p).toLowerCase()
