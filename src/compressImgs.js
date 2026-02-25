@@ -492,7 +492,7 @@ async function detectImgFormat(inputPath) {
     const isTGA = [0, 1, 2, 3, 9, 10, 11].includes(buf[2])
     if (isTGA) return '.tga'
 
-    const hexStr = but.toString('hex').match(/.{2}/g).join(' ')
+    const hexStr = buf.toString('hex').match(/.{2}/g).join(' ')
     console.warn(
       `\nunknown actual format of "${inputPath}"\n` +
         `first 5 bytes: "${hexStr}" : "${buf.toString()}"\n` +
