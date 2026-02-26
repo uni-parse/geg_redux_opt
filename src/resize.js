@@ -9,8 +9,8 @@ const exluded = [
 function getResizeDimensions(
   img,
   resizePercent = 80,
-  minResize = 32,
-  maxResize = 512
+  minResizeDimension = 32,
+  maxResizeDimension = 512
 ) {
   const {
     size, // number
@@ -30,16 +30,18 @@ function getResizeDimensions(
       .toLowerCase()
       .includes(path.normalize(p).toLowerCase())
   )
-  const isSmall = imgDimension <= minResize
-  const isPreserved =
-    resizePercent === 100 && imgDimension <= maxResize
+  const isSmall = imgDimension <= minResizeDimension
+  const isOverSized = imgDimension > maxResizeDimension
+  const isPreserved = resizePercent === 100 && !isOverSized
 
   if (isExluded || isSmall || isPreserved)
     return { canResize: false }
 
   let newDimension = imgDimension * (resizePercent / 100)
-  if (newDimension > maxResize) newDimension = maxResize
-  if (newDimension < minResize) newDimension = minResize
+  if (newDimension > maxResizeDimension)
+    newDimension = maxResizeDimension
+  if (newDimension < minResizeDimension)
+    newDimension = minResizeDimension
 
   const aspectRatio = width / height
   const isLandscape = width >= height

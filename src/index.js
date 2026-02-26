@@ -48,8 +48,8 @@ async function main(basePath, selectMode, options) {
 
   const {
     resizePercent,
-    minResize,
-    maxResize,
+    minResizeDimension,
+    maxResizeDimension,
     maxMeshFloatDecimals,
   } = options
 
@@ -249,8 +249,8 @@ async function main(basePath, selectMode, options) {
           bmpTemp,
           // do not resize, it have aprolute ui/sprite textures
           100, // resizePercent,
-          99999, // minResize,
-          99999 // maxResize
+          99999, // minResizeDimension,
+          99999 // maxResizeDimension
         )
 
       if (canOptMedia)
@@ -260,8 +260,8 @@ async function main(basePath, selectMode, options) {
           mediaBackup,
           mediaTemp,
           resizePercent,
-          minResize,
-          maxResize
+          minResizeDimension,
+          maxResizeDimension
         )
     }
 

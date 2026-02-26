@@ -8,8 +8,8 @@ set "base_dir="
 set "select_mode="
 set "maxMeshFloatDecimals="
 set "resizePercent="
-set "minResize="
-set "maxResize="
+set "minResizeDimension="
+set "maxResizeDimension="
 
 :: Cache file location (saved next to the batch script)
 set "cacheFile=%~dp0cache_base_dir.txt"
@@ -81,7 +81,7 @@ echo !select_mode!|findstr /r "^[1-3]$" >nul || (
 
 if "!select_mode!"=="2" goto :ask_images
 
-:: Prompt for maxMeshFloatDecimals
+:: Prompt for max Mesh float decimals -------------------------
 cls
 set default_maxMeshFloatDecimals=4
 :ask_maxMeshFloatDecimals
@@ -105,14 +105,16 @@ if "!select_mode!"=="1" goto :show_summary
 
 :ask_images
 
-:: Prompt for resizePercent -------------------------
+:: Prompt for resize percent ----------------------------------
 set default_resizePercent=80
 cls
 :ask_resizePercent
 echo Enter resize percentage %% (1~100)
 echo or press Enter to default to: %default_resizePercent%
 set /p resizePercent="> "
-if "!resizePercent!"=="" set resizePercent=%default_resizePercent%
+if "!resizePercent!"=="" (
+  set resizePercent=%default_resizePercent%
+)
 
 :: Remove % symbol if present
 set "resizePercent=!resizePercent:%%=!"
@@ -139,23 +141,27 @@ if !resizePercent! gtr 100 (
 )
 set "args=!args! --resizePercent !resizePercent!"
 
-:: Prompt for minResize -----------------------------
-set default_minResize=64
+:: Prompt for min resize dimension ----------------------------
+set default_minResizeDimension=64
 cls
 echo Enter min resize dimension in pixels
-echo or press Enter to default to: %default_minResize%
-set /p minResize="> "
-if "!minResize!"=="" set minResize=%default_minResize%
-set "args=!args! --minResize !minResize!"
+echo or press Enter to default to: %default_minResizeDimension%
+set /p minResizeDimension="> "
+if "!minResizeDimension!"=="" (
+  set minResizeDimension=%default_minResizeDimension%
+)
+set "args=!args! --minResizeDimension !minResizeDimension!"
 
-:: Prompt for maxResize -----------------------------
-set default_maxResize=512
+:: Prompt for max resize dimension ----------------------------
+set default_maxResizeDimension=512
 cls
 echo Enter max resize dimension in pixels
-echo or press Enter to default to: %default_maxResize%
-set /p maxResize="> "
-if "!maxResize!"=="" set maxResize=%default_maxResize%
-set "args=!args! --maxResize !maxResize!"
+echo or press Enter to default to: %default_maxResizeDimension%
+set /p maxResizeDimension="> "
+if "!maxResizeDimension!"=="" (
+  set maxResizeDimension=%default_maxResizeDimension%
+)
+set "args=!args! --maxResizeDimension !maxResizeDimension!"
 
 :: summary ------------------------------------------
 :show_summary
@@ -166,23 +172,23 @@ echo ========================================
 echo.
 echo Source Path:    "!base_dir!"
 if %select_mode%==1 (
-  echo Optimize mode:  3D Mesh files only
+  echo Optimize mode:      3D Mesh files only
   echo Max Float Decimals: !maxMeshFloatDecimals!
   echo Target Path:    \ACTORS\ITEMS    [3d mesh]
   echo                 \ACTORS\MONSTERS [3d mesh repack .azp]
 ) else if %select_mode%==2 (
-  echo Optimize mode:  Textures only
-  echo Resize Percent: !resizePercent!%%
-  echo Min Dimension:  !minResize!px
-  echo Max Dimension:  !maxResize!px
+  echo Optimize mode:        Textures only
+  echo Resize Percent:       !resizePercent!%%
+  echo Min Resize Dimension: !minResizeDimension!px
+  echo Max Resize Dimension: !maxResizeDimension!px
   echo Target Paths:   \MEDIA  [textures]
   echo                 \BMP    [textures, no resize]
 ) else if %select_mode%==3 (
   echo Optimize mode:  Both Textures and 3D Mesh files
-  echo Max Float Decimals: !maxMeshFloatDecimals!
-  echo Resize Percent: !resizePercent!%%
-  echo Min Dimension:  !minResize!px
-  echo Max Dimension:  !maxResize!px
+  echo Max Float Decimals:   !maxMeshFloatDecimals!
+  echo Resize Percent:       !resizePercent!%%
+  echo Min Resize Dimension: !minResizeDimension!px
+  echo Max Resize Dimension: !maxResizeDimension!px
   echo Target Paths:   \MEDIA           [textures]
   echo                 \BMP             [textures, no resize]
   echo                 \ACTORS\ITEMS    [3d mesh]

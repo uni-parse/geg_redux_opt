@@ -51,8 +51,8 @@ async function compressImgs(
   baseSrcDir,
   baseDestDir,
   resizePercent,
-  minResize,
-  maxResize
+  minResizeDimension,
+  maxResizeDimension
 ) {
   const filePaths = await getAllFilePaths(baseSrcDir)
 
@@ -232,8 +232,8 @@ async function compressImgs(
           img,
           outPath,
           resizePercent,
-          minResize,
-          maxResize
+          minResizeDimension,
+          maxResizeDimension
         )
       } catch (error) {
         if (SHOW_MORE_LOGS)
@@ -247,8 +247,8 @@ async function compressImgs(
             img,
             outPath,
             resizePercent,
-            minResize,
-            maxResize
+            minResizeDimension,
+            maxResizeDimension
           )
 
           if (SHOW_MORE_LOGS)
@@ -388,8 +388,8 @@ async function convertToDDS_texconv(
   img,
   outPath,
   resizePercent,
-  minResize,
-  maxResize
+  minResizeDimension,
+  maxResizeDimension
 ) {
   let flags = ''
   flags += ' --single-proc' // disable multi thread
@@ -406,8 +406,8 @@ async function convertToDDS_texconv(
     getResizeDimensions(
       img,
       resizePercent,
-      minResize,
-      maxResize
+      minResizeDimension,
+      maxResizeDimension
     )
   if (canResize) {
     flags += ` --width ${newWidth}`
@@ -422,8 +422,8 @@ async function convertToDDS_magick(
   img,
   outPath,
   resizePercent,
-  minResize,
-  maxResize
+  minResizeDimension,
+  maxResizeDimension
 ) {
   let flags = ''
   flags += ' -define dds:mipmaps=4'
@@ -439,8 +439,8 @@ async function convertToDDS_magick(
     getResizeDimensions(
       img,
       resizePercent,
-      minResize,
-      maxResize
+      minResizeDimension,
+      maxResizeDimension
     )
   if (canResize) flags += ` -resize "${newWidth}x${newHeight}>"`
 
