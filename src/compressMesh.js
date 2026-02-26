@@ -17,7 +17,7 @@ async function compressMesh(
   IO_LIMIT,
   baseSrcDir,
   baseDestDir,
-  floatDecimal
+  maxMeshFloatDecimals
 ) {
   const allPaths = await getAllFilePaths(baseSrcDir)
   const meshPaths = []
@@ -65,7 +65,7 @@ async function compressMesh(
 
       const optContent = optMeshConfigContent(
         content,
-        floatDecimal
+        maxMeshFloatDecimals
       )
 
       // Create output directory if needed
@@ -135,7 +135,10 @@ async function compressMesh(
 
         // opt text
         if (!isSupportedTxt0303) {
-          optContent = optMeshContent(content, floatDecimal)
+          optContent = optMeshContent(
+            content,
+            maxMeshFloatDecimals
+          )
           await fs.writeFile(outPath, optContent, 'utf8')
         }
       } else await copyFile(p, outPath)
@@ -170,7 +173,7 @@ async function compressMesh(
   return { orgSize, optSize, savedSize, savedPercent }
 }
 
-function optMeshConfigContent(content, floatDecimal) {
+function optMeshConfigContent(content, maxMeshFloatDecimals) {
   return (
     content
       .split(/\r?\n/)
@@ -185,12 +188,12 @@ function optMeshConfigContent(content, floatDecimal) {
       .join('\n')
       // Optimize floats
       .replace(/(-?\d+\.\d+)/g, match =>
-        roundFloat(match, floatDecimal)
+        roundFloat(match, maxMeshFloatDecimals)
       )
   )
 }
 
-function optMeshContent(content, floatDecimal) {
+function optMeshContent(content, maxMeshFloatDecimals) {
   const header = content.slice(0, 16)
   const body = content
     .slice(16)
@@ -214,7 +217,7 @@ function optMeshContent(content, floatDecimal) {
     .replaceAll(';;', ';')
     // Optimize floats
     .replace(/(-?\d+\.\d{6})(?!\d)/g, match =>
-      roundFloat(match, floatDecimal)
+      roundFloat(match, maxMeshFloatDecimals)
     )
 
   return `${header}\n${body}`

@@ -6,7 +6,7 @@ set "args="
 set "cache_dir="
 set "base_dir="
 set "select_mode="
-set "floatDecimal="
+set "maxMeshFloatDecimals="
 set "resizePercent="
 set "minResize="
 set "maxResize="
@@ -81,24 +81,25 @@ echo !select_mode!|findstr /r "^[1-3]$" >nul || (
 
 if "!select_mode!"=="2" goto :ask_images
 
-:: Prompt for floatDecimal
+:: Prompt for maxMeshFloatDecimals
 cls
-set default_floatDecimal=4
-:ask_floatDecimal
-echo 3d Mesh coordinates optimization
+set default_maxMeshFloatDecimals=4
+:ask_maxMeshFloatDecimals
+echo set max float decimals of 3d Mesh coordinates
 echo example (6 to 4): 0.123456 opted to 0.1235
-echo Enter number of decimals after float point (3~6)
-echo or press Enter to default to: %default_floatDecimal%
+echo.
+echo Enter number of max decimals after float (3~6)
+echo or press Enter to default to: %default_maxMeshFloatDecimals%
 
-set /p floatDecimal="> "
-if "!floatDecimal!"=="" set floatDecimal=%default_floatDecimal%
-echo !floatDecimal!|findstr /r "^[3-6]$" >nul || (
+set /p maxMeshFloatDecimals="> "
+if "!maxMeshFloatDecimals!"=="" set maxMeshFloatDecimals=%default_maxMeshFloatDecimals%
+echo !maxMeshFloatDecimals!|findstr /r "^[3-6]$" >nul || (
   cls
   echo Invalid input. Must be between 3 and 6.
   echo.
-  goto :ask_floatDecimal
+  goto :ask_maxMeshFloatDecimals
 )
-set "args=!args! --floatDecimal !floatDecimal!"
+set "args=!args! --maxMeshFloatDecimals !maxMeshFloatDecimals!"
 
 if "!select_mode!"=="1" goto :show_summary
 
@@ -166,7 +167,7 @@ echo.
 echo Source Path:    "!base_dir!"
 if %select_mode%==1 (
   echo Optimize mode:  3D Mesh files only
-  echo Float Decimals: !floatDecimal!
+  echo Max Float Decimals: !maxMeshFloatDecimals!
   echo Target Path:    \ACTORS\ITEMS    [3d mesh]
   echo                 \ACTORS\MONSTERS [3d mesh repack .azp]
 ) else if %select_mode%==2 (
@@ -178,7 +179,7 @@ if %select_mode%==1 (
   echo                 \BMP    [textures, no resize]
 ) else if %select_mode%==3 (
   echo Optimize mode:  Both Textures and 3D Mesh files
-  echo Float Decimals: !floatDecimal!
+  echo Max Float Decimals: !maxMeshFloatDecimals!
   echo Resize Percent: !resizePercent!%%
   echo Min Dimension:  !minResize!px
   echo Max Dimension:  !maxResize!px

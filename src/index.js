@@ -46,6 +46,13 @@ async function main(basePath, selectMode, options) {
   const timerLabel = 'Total Time'
   console.time(timerLabel)
 
+  const {
+    resizePercent,
+    minResize,
+    maxResize,
+    maxMeshFloatDecimals,
+  } = options
+
   const optMeshOnly = selectMode === 1
   const optTexturesOnly = selectMode === 2
   const optAll = selectMode === 3
@@ -170,7 +177,7 @@ async function main(basePath, selectMode, options) {
           IO_LIMIT,
           meshBackup,
           meshTemp,
-          options.floatDecimal
+          maxMeshFloatDecimals
         )
 
       if (canOptAzpMesh) {
@@ -202,7 +209,7 @@ async function main(basePath, selectMode, options) {
           IO_LIMIT,
           baseUnpackDir,
           baseUnpackOptDir,
-          options.floatDecimal
+          maxMeshFloatDecimals
         )
 
         // repack
@@ -241,9 +248,9 @@ async function main(basePath, selectMode, options) {
           bmpBackup,
           bmpTemp,
           // do not resize, it have aprolute ui/sprite textures
-          100, //options.resizePercent,
-          99999, //options.minResize,
-          99999 //options.maxResize
+          100, // resizePercent,
+          99999, // minResize,
+          99999 // maxResize
         )
 
       if (canOptMedia)
@@ -252,9 +259,9 @@ async function main(basePath, selectMode, options) {
           IO_LIMIT,
           mediaBackup,
           mediaTemp,
-          options.resizePercent,
-          options.minResize,
-          options.maxResize
+          resizePercent,
+          minResize,
+          maxResize
         )
     }
 
