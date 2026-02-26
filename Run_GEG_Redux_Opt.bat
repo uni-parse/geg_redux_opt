@@ -3,25 +3,62 @@ setlocal enabledelayedexpansion
 
 :: Clear all variables at start
 set "args="
-set "src_path="
+set "cache_dir="
+set "base_dir="
 set "select_mode="
 set "floatDecimal="
 set "resizePercent="
 set "minResize="
 set "maxResize="
 
-:: Prompt for src_path
-:src_path
+:: Cache file location (saved next to the batch script)
+set "cacheFile=%~dp0cache_base_dir.txt"
+
+:: Load cache dir
+if exist "%cacheFile%" set /p cache_dir=<"%cacheFile%"
+
+:: Prompt for base_dir
+:base_dir
 echo Enter path to "...\Mods\GEG Redux\Data":
-set /p src_path="> "
-if "!src_path!"=="" (
-    cls
-    goto :src_path
+if exist "%cacheFile%" (
+  if not "!cache_dir!"=="" (
+    set base_dir=!cache_dir!
+    echo or press Enter to default to: "!cache_dir!"
+  )
+)
+set /p base_dir="> "
+
+:: Trim spaces from user input (both ends)
+:trim_user_input
+:: Trim leading spaces
+if "!base_dir:~0,1!"==" " (
+  set "base_dir=!base_dir:~1!"
+  goto :trim_user_input
+)
+:: Trim trailing spaces
+if "!base_dir:~-1!"==" " (
+  set "base_dir=!base_dir:~0,-1!"
+  goto :trim_user_input
 )
 
-:: Clean path from quotes and trailing \
-set "src_path=!src_path:"=!"
-if "!src_path:~-1!"=="\" set "src_path=!src_path:~0,-1!"
+:: Clear quotes
+if not "!base_dir!"=="" (
+  set "base_dir=!base_dir:"=!"
+)
+
+:: Clear trailing \
+if "!base_dir:~-1!"=="\" set "base_dir=!base_dir:~0,-1!"
+
+:: validate empty dir
+if "!base_dir!"=="" (
+  cls
+  goto :base_dir
+)
+
+:: Save to cache file
+if not "!base_dir!"=="!cache_dir!" (
+  <nul set /p "=!base_dir!" > "%cacheFile%"
+)
 
 cls
 :select_mode
@@ -126,20 +163,20 @@ echo ========================================
 echo              SUMMARY
 echo ========================================
 echo.
-echo Source Path:    !src_path!
-if "!select_mode!"=="1" (
+echo Source Path:    "!base_dir!"
+if %select_mode%==1 (
   echo Optimize mode:  3D Mesh files only
   echo Float Decimals: !floatDecimal!
   echo Target Path:    \ACTORS\ITEMS    [3d mesh]
   echo                 \ACTORS\MONSTERS [3d mesh repack .azp]
-) else if "!select_mode!"=="2" (
+) else if %select_mode%==2 (
   echo Optimize mode:  Textures only
   echo Resize Percent: !resizePercent!%%
   echo Min Dimension:  !minResize!px
   echo Max Dimension:  !maxResize!px
   echo Target Paths:   \MEDIA  [textures]
   echo                 \BMP    [textures, no resize]
-) else if "!select_mode!"=="3" (
+) else if %select_mode%==3 (
   echo Optimize mode:  Both Textures and 3D Mesh files
   echo Float Decimals: !floatDecimal!
   echo Resize Percent: !resizePercent!%%
@@ -161,7 +198,7 @@ echo ========================================
 echo.
 
 :: Run Node.js script with all arguments
-node "%~dp0src/index.js" "!src_path!" !select_mode! !args!
+node "%~dp0src/index.js" "!base_dir!" !select_mode! !args!
 
 echo.
 echo ========================================
