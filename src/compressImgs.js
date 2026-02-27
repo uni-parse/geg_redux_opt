@@ -75,11 +75,12 @@ async function compressImgs(
     unSupportedPaths,
     IO_LIMIT,
     async p => {
-      const outputPath = p.replace(baseSrcDir, baseDestDir)
-      await copyFile(p, outputPath)
+      const relPath = path.relative(baseSrcDir, p)
+      const outPath = path.join(baseDestDir, relPath)
+      await copyFile(p, outPath)
 
       if (SHOW_MORE_LOGS)
-        console.log(`\n\n📋 Copied File "${outputPath}"`)
+        console.log(`\n\n📋 Copied File "${outPath}"`)
     }
   )
 

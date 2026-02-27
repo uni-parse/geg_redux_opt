@@ -47,7 +47,8 @@ async function compressMesh(
     otherPaths,
     IO_LIMIT,
     async p => {
-      const outPath = p.replace(baseSrcDir, baseDestDir)
+      const relPath = path.relative(baseSrcDir, p)
+      const outPath = path.join(baseDestDir, relPath)
       await copyFile(p, outPath)
       return outPath
     }
@@ -60,7 +61,8 @@ async function compressMesh(
     CORES_LIMIT,
     async p => {
       const filename = path.basename(p)
-      const outPath = p.replace(baseSrcDir, baseDestDir)
+      const relPath = path.relative(baseSrcDir, p)
+      const outPath = path.join(baseDestDir, relPath)
       const content = await fs.readFile(p, 'utf8')
 
       const optContent = optMeshConfigContent(
@@ -88,7 +90,8 @@ async function compressMesh(
     CORES_LIMIT,
     async p => {
       const filename = path.basename(p)
-      const outPath = p.replace(baseSrcDir, baseDestDir)
+      const relPath = path.relative(baseSrcDir, p)
+      const outPath = path.join(baseDestDir, relPath)
 
       // Create output directory if needed
       const dir = path.dirname(outPath)
