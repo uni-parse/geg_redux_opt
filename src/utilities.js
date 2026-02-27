@@ -137,9 +137,8 @@ async function copyFile(src, dest) {
   // Delete if exists
   await fs.unlink(dest).catch(() => {})
 
-  // Create output directory if needed
-  const dir = path.dirname(dest)
-  await fs.mkdir(dir, { recursive: true })
+  const parentDir = path.dirname(dest)
+  await fs.mkdir(parentDir, { recursive: true })
 
   await fs.copyFile(src, dest)
 }
@@ -150,9 +149,8 @@ async function moveDir(src, dest) {
     .rm(dest, { recursive: true, force: true })
     .catch(() => {})
 
-  // Create output directory if needed
-  const dir = path.dirname(dest)
-  await fs.mkdir(dir, { recursive: true })
+  const parentDir = path.dirname(dest)
+  await fs.mkdir(parentDir, { recursive: true })
 
   await fs.rename(src, dest)
 }

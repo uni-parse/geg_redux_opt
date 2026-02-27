@@ -224,9 +224,8 @@ async function compressImgs(
         img.basename + img.id + '.dds'
       )
 
-      // Create output directory if needed
-      const dir = path.dirname(outPath)
-      await fs.mkdir(dir, { recursive: true })
+      const parentdir = path.dirname(outPath)
+      await fs.mkdir(parentdir, { recursive: true })
 
       try {
         await convertToDDS_texconv(

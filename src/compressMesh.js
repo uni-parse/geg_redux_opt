@@ -70,9 +70,8 @@ async function compressMesh(
         maxMeshFloatDecimals
       )
 
-      // Create output directory if needed
-      const dir = path.dirname(outPath)
-      await fs.mkdir(dir, { recursive: true })
+      const parentDir = path.dirname(outPath)
+      await fs.mkdir(parentDir, { recursive: true })
 
       await fs.writeFile(outPath, optContent, 'utf8')
 
@@ -93,9 +92,8 @@ async function compressMesh(
       const relPath = path.relative(baseSrcDir, p)
       const outPath = path.join(baseDestDir, relPath)
 
-      // Create output directory if needed
-      const dir = path.dirname(outPath)
-      await fs.mkdir(dir, { recursive: true })
+      const parentDir = path.dirname(outPath)
+      await fs.mkdir(parentDir, { recursive: true })
 
       const content = await fs.readFile(p, 'utf8')
       let optContent = content

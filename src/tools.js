@@ -70,9 +70,8 @@ async function magickConv(inputPath, flags, outPath) {
   if (flags) command += ` ${flags}`
 
   if (outPath) {
-    // Create output directory if needed
-    const dir = path.dirname(outPath)
-    await fs.mkdir(dir, { recursive: true })
+    const parentDir = path.dirname(outPath)
+    await fs.mkdir(parentDir, { recursive: true })
 
     command += ` "${outPath}"`
   }
@@ -106,9 +105,8 @@ async function meshConv(inputPath, flags, outPath) {
   // to txt: -xt
 
   if (outPath) {
-    // Create output directory if needed
-    const dir = path.dirname(outPath)
-    await fs.mkdir(dir, { recursive: true })
+    const parentDir = path.dirname(outPath)
+    await fs.mkdir(parentDir, { recursive: true })
 
     command += ` -o "${outPath}"`
     command += ` -y`
@@ -133,9 +131,8 @@ async function unpackAZP(azpPath, unpackDir) {
 }
 
 async function repackAZP(unpackDir, azpPath) {
-  // Create output directory if needed
-  const azpDir = path.dirname(azpPath)
-  await fs.mkdir(azpDir, { recursive: true })
+  const parentDir = path.dirname(azpPath)
+  await fs.mkdir(parentDir, { recursive: true })
 
   let command = `cd "${unpackDir}"`
   command += ` &&`
