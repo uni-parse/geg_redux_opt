@@ -119,15 +119,13 @@ async function main(baseDirInput, options = {}) {
       return result
     }
 
-    const textureResults = {}
-    const meshResults = {}
+    const results = { textures: [], mesh: [] }
 
     // opt textures -------------------------------------------
-    if (canOptTextures) {
-      // Mods/GEG Redux/Data/BMP
-      textureResults.result1 = await opt(
-        'Mods/GEG Redux/Data/BMP',
-        (srcDir, outDir) =>
+    if (canOptTextures)
+      results.textures = [
+        // Mods/GEG Redux/Data/BMP
+        await opt('Mods/GEG Redux/Data/BMP', (srcDir, outDir) =>
           compressImgs(
             CORES_LIMIT,
             IO_LIMIT,
@@ -138,82 +136,83 @@ async function main(baseDirInput, options = {}) {
             99999, // minResizeDimension,
             99999 // maxResizeDimension
           )
-      )
+        ),
 
-      // Mods/GEG Redux/Data/HARDLIFE/BMP
-      textureResults.result2 = await opt(
-        'Mods/GEG Redux/Data/HARDLIFE/BMP',
-        (srcDir, outDir) =>
-          compressImgs(
-            CORES_LIMIT,
-            IO_LIMIT,
-            srcDir,
-            outDir,
-            resizePercent,
-            minResizeDimension,
-            maxResizeDimension
-          )
-      )
+        // Mods/GEG Redux/Data/HARDLIFE/BMP
+        await opt(
+          'Mods/GEG Redux/Data/HARDLIFE/BMP',
+          (srcDir, outDir) =>
+            compressImgs(
+              CORES_LIMIT,
+              IO_LIMIT,
+              srcDir,
+              outDir,
+              resizePercent,
+              minResizeDimension,
+              maxResizeDimension
+            )
+        ),
 
-      // Mods/GEG Redux/Data/MEDIA
-      textureResults.result3 = await opt(
-        'Mods/GEG Redux/Data/MEDIA',
-        (srcDir, outDir) =>
-          compressImgs(
-            CORES_LIMIT,
-            IO_LIMIT,
-            srcDir,
-            outDir,
-            resizePercent,
-            minResizeDimension,
-            maxResizeDimension
-          )
-      )
-    }
+        // Mods/GEG Redux/Data/MEDIA
+        await opt(
+          'Mods/GEG Redux/Data/MEDIA',
+          (srcDir, outDir) =>
+            compressImgs(
+              CORES_LIMIT,
+              IO_LIMIT,
+              srcDir,
+              outDir,
+              resizePercent,
+              minResizeDimension,
+              maxResizeDimension
+            )
+        ),
+      ]
 
     // opt 3d mesh --------------------------------------------
-    if (canOptMesh) {
-      // Mods/GEG Redux/Data/ACTORS/ITEMS
-      meshResults.result1 = await opt(
-        'Mods/GEG Redux/Data/ACTORS/ITEMS',
-        (srcDir, outDir) =>
-          compressMesh(
-            CORES_LIMIT,
-            IO_LIMIT,
-            srcDir,
-            outDir,
-            maxMeshFloatDecimals
-          )
-      )
+    if (canOptMesh)
+      results.mesh = [
+        // Mods/GEG Redux/Data/ACTORS/ITEMS
+        await opt(
+          'Mods/GEG Redux/Data/ACTORS/ITEMS',
+          (srcDir, outDir) =>
+            compressMesh(
+              CORES_LIMIT,
+              IO_LIMIT,
+              srcDir,
+              outDir,
+              maxMeshFloatDecimals
+            )
+        ),
 
-      // Mods/GEG Redux/Data/ACTORS/MONSTERS
-      meshResults.result2 = await opt(
-        'Mods/GEG Redux/Data/ACTORS/MONSTERS',
-        async (srcDir, outDir) =>
-          compressMesh(
-            CORES_LIMIT,
-            IO_LIMIT,
-            srcDir,
-            outDir,
-            maxMeshFloatDecimals
-          ),
-        true
-      )
+        // Mods/GEG Redux/Data/ACTORS/MONSTERS
+        await opt(
+          'Mods/GEG Redux/Data/ACTORS/MONSTERS',
+          async (srcDir, outDir) =>
+            compressMesh(
+              CORES_LIMIT,
+              IO_LIMIT,
+              srcDir,
+              outDir,
+              maxMeshFloatDecimals
+            ),
+          true
+        ),
 
-      // Data/Actors/Monsters
-      meshResults.result3 = await opt(
-        'Data/Actors/Monsters',
-        async (srcDir, outDir) =>
-          compressMesh(
-            CORES_LIMIT,
-            IO_LIMIT,
-            srcDir,
-            outDir,
-            maxMeshFloatDecimals
-          ),
-        true
-      )
-    }
+        // Data/Actors/Monsters
+        await opt(
+          'Data/Actors/Monsters',
+          async (srcDir, outDir) =>
+            compressMesh(
+              CORES_LIMIT,
+              IO_LIMIT,
+              srcDir,
+              outDir,
+              maxMeshFloatDecimals
+            ),
+          true
+        ),
+      ]
 
     // clear temp dir -----------------------------------------
     await removeDir(baseTempDir)
@@ -226,15 +225,15 @@ async function main(baseDirInput, options = {}) {
 
     // show summary -------------------------------------------
     console.log(`\n${'═'.repeat(60)}`)
-    if (canOptTextures)
+    if (canOptTextures && results.textures.length > 0)
       showSummary(
         'Final Textures Optimization Summary',
-        Object.values(textureResults)
+        results.textures
       )
-    if (canOptMesh)
+    if (canOptMesh && results.mesh.length > 0)
       showSummary(
         'Final 3d Mesh Optimization Summary',
-        Object.values(meshResults)
+        results.mesh
       )
     console.log('═'.repeat(60))
   } catch (error) {
