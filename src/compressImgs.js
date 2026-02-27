@@ -346,26 +346,26 @@ async function compressImgs(
   )
 
   const orgSize = imgs.reduce((_, img) => _ + img.size, 0)
-  const newSize = imgs.reduce(
+  const optSize = imgs.reduce(
     (_, img) => _ + (img.opt?.size ?? img.size),
     0
   )
-  const saved = orgSize - newSize
-  const savedPercent = Math.round((saved / orgSize) * 100)
+  const savedSize = orgSize - optSize
+  const savedPercent = Math.round((savedSize / orgSize) * 100)
 
   console.log(
     `\n${'═'.repeat(60)}\n` +
       `⚡ Optimized: ${optedImgs.length} / ${imgs.length} textures\n` +
       `📊 Total Size: ${sizeToStr(orgSize)} → ${sizeToStr(
-        newSize
+        optSize
       )}\n` +
       `💰 Total Size Saved: ${savedPercent}% ${sizeToStr(
-        saved
+        savedSize
       )}\n` +
       `${'═'.repeat(60)}\n`
   )
 
-  return { orgSize, newSize, saved, savedPercent }
+  return { orgSize, optSize, savedSize, savedPercent }
 }
 
 async function getImageStatus(inputPath) {
