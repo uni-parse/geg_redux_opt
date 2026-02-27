@@ -20,6 +20,8 @@
     - downScale overSized textures as 2k/4k (based on your config)
   - Reduce Loading time
     - opt 3d mesh 4.8gb => ~3.2gb (based on your config)
+    - convenrt to binary supported files as 0303txt
+    - opt text of unsupported files as 0302txt
 
 ## Requirments
   - install [node](https://nodejs.org/en/download/current) if you did not yet:
@@ -31,20 +33,16 @@
     cd geg_redux_opt
   - double click on `/Run_GEG_Redux_Opt.bat` and follow instructins
   - wait (depend on your hardware it may took 5~25min)
-  - backup will be generated, (you can remove it at the end):
-     ```bash
-     /Mods/GEG Redux/Data/_backup/MEDIA
-     /Mods/GEG Redux/Data/_backup/BMP
-     /Mods/GEG Redux/Data/_backup/ACTORS/ITEMS
-     /Mods/GEG Redux/Data/_backup/ACTORS/MONSTERS
-  - Warning ⚠️: keep backup if you want to test different resize configs
+  - backup will be generated `/_geg_redux_opt/_backup/` 
+    - you can remove it at the end
+    - ⚠️ but keep it if you want to test different resize configs
   - optional: you can exclude some textures from resizing in `/geg_redux_opt/src/resize.js`
 
 ## Refresh Cache Tutorial
-  - the script will automaticly rename old cache
+  - the script will automaticly backup old cache
     ```bash
-    /Temp          => /Temp_backup_<timestamp>
-    /RenderedItems => /RenderedItems_backup_<timestamp>
+    /Temp          => /_geg_redux_opt/_cache/<date>/Temp
+    /RenderedItems => /_geg_redux_opt/_cache/<date>/RenderedItems
   - now let generate fresh cache (fellow below instractins)
   - load save
   - open console by the key `~`
@@ -56,21 +54,27 @@
 
 ## Texture Processing Pipeline
   - textures: .tga .dds .bmp .png .jpg .jpeg .webp
-  - directories: `/MEDIA`, `/BMP`
+  - directories:
+    - `/Mods/GEG Redux/Data/MEDIA`
+    - `/Mods/GEG Redux/Data/BMP`          (no resize)
+    - `/Mods/GEG Redux/Data/HARDLIFE/BMP`
   - skip/copy unsupported textures as .vtf ...
-  - rename misFormated textures (required by [magick.exe](https://imagemagick.org/))
-  - repair corrupt .dds headers (required by [magick.exe](https://imagemagick.org/))
-  - convert everything to .dds (compress dxt1/dxt5) (by [texconv.exe](https://github.com/microsoft/DirectXTex/wiki/Texconv) / [magick.exe](https://imagemagick.org/))
-  - resize only `/MEDIA` textures (preserve the UI `/BMP` textures)
-  - compatibility hack: rename back to org filename
+  - rename misFormated textures (required by magick.exe)
+  - repair corrupt .dds headers (required by magick.exe)
+  - convert everything to .dds (compress dxt1/dxt5) 
+    - by [texconv.exe](https://github.com/microsoft/DirectXTex/wiki/Texconv) and fallback to [magick.exe](https://imagemagick.org/)
+  - resize textures by percentage, and respect min/max Dimension
+  - rename back to org filename (compatibility hack)
 
 ## 3D Mesh Processing Pipeline
   - mesh files: .x .mesh .act .actx .act.# .lod#
   - config files: .att .inf .hi .descr
-  - target directories: `/ACTORS/ITEMS`, `/ACTORS/MONSTERS`
-  - unpack/repack .azp files in `/ACTORS/MONSTERS`
+  - target directories:
+    - `/Mods/GEG Redux/Data/ACTORS/ITEMS`
+    - `/Mods/GEG Redux/Data/ACTORS/MONSTERS` (repack azp)
+    - `/Data/Actors/Monsters` (repack azp)
   - convert 0303txt mesh files to binary
-    - by MeshConvert.exe utility from [DirectX sdk june 2010](https://archive.org/details/dxsdk_jun10)
+    - by **MeshConvert.exe** utility from [DirectX sdk june 2010](https://archive.org/details/dxsdk_jun10)
   - opt text of configs and 0302txt mesh files
     - clear `// comments`
     - clear white-space as: spaces, tabs, new lines
