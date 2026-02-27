@@ -119,13 +119,13 @@ async function main(baseDirInput, options = {}) {
       return result
     }
 
-    const meshResults = []
-    const textureResults = []
+    const textureResults = {}
+    const meshResults = {}
 
     // opt textures -------------------------------------------
     if (canOptTextures) {
       // Mods/GEG Redux/Data/BMP
-      const result1 = await opt(
+      textureResults.result1 = await opt(
         'Mods/GEG Redux/Data/BMP',
         (srcDir, outDir) =>
           compressImgs(
@@ -141,7 +141,7 @@ async function main(baseDirInput, options = {}) {
       )
 
       // Mods/GEG Redux/Data/HARDLIFE/BMP
-      const result2 = await opt(
+      textureResults.result2 = await opt(
         'Mods/GEG Redux/Data/HARDLIFE/BMP',
         (srcDir, outDir) =>
           compressImgs(
@@ -156,7 +156,7 @@ async function main(baseDirInput, options = {}) {
       )
 
       // Mods/GEG Redux/Data/MEDIA
-      const result3 = await opt(
+      textureResults.result3 = await opt(
         'Mods/GEG Redux/Data/MEDIA',
         (srcDir, outDir) =>
           compressImgs(
@@ -169,14 +169,12 @@ async function main(baseDirInput, options = {}) {
             maxResizeDimension
           )
       )
-
-      textureResults.push(result1, result2, result3)
     }
 
     // opt 3d mesh --------------------------------------------
     if (canOptMesh) {
       // Mods/GEG Redux/Data/ACTORS/ITEMS
-      const result1 = await opt(
+      meshResults.result1 = await opt(
         'Mods/GEG Redux/Data/ACTORS/ITEMS',
         (srcDir, outDir) =>
           compressMesh(
@@ -189,7 +187,7 @@ async function main(baseDirInput, options = {}) {
       )
 
       // Mods/GEG Redux/Data/ACTORS/MONSTERS
-      const result2 = await opt(
+      meshResults.result2 = await opt(
         'Mods/GEG Redux/Data/ACTORS/MONSTERS',
         async (srcDir, outDir) =>
           compressMesh(
@@ -203,7 +201,7 @@ async function main(baseDirInput, options = {}) {
       )
 
       // Data/Actors/Monsters
-      const result3 = await opt(
+      meshResults.result3 = await opt(
         'Data/Actors/Monsters',
         async (srcDir, outDir) =>
           compressMesh(
@@ -215,8 +213,6 @@ async function main(baseDirInput, options = {}) {
           ),
         true
       )
-
-      meshResults.push(result1, result2, result3)
     }
 
     // clear temp dir -----------------------------------------
@@ -233,12 +229,12 @@ async function main(baseDirInput, options = {}) {
     if (canOptTextures)
       showSummary(
         'Final Textures Optimization Summary',
-        textureResults
+        Object.values(textureResults)
       )
     if (canOptMesh)
       showSummary(
         'Final 3d Mesh Optimization Summary',
-        meshResults
+        Object.values(meshResults)
       )
     console.log('═'.repeat(60))
   } catch (error) {
