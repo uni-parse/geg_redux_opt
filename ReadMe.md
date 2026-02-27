@@ -54,7 +54,7 @@
 
 ## Texture Processing Pipeline
   - textures: .tga .dds .bmp .png .jpg .jpeg .webp
-  - directories:
+  - target directories:
     - `/Mods/GEG Redux/Data/MEDIA`
     - `/Mods/GEG Redux/Data/BMP`          (no resize)
     - `/Mods/GEG Redux/Data/HARDLIFE/BMP`
