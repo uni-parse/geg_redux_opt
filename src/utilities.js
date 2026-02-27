@@ -7,13 +7,14 @@ module.exports = {
   parallelProccess,
   showProgressBar,
   getAllFilePaths,
-  sizeToStr,
   execAsync,
   spawnAsync,
   checkDir,
   copyFile,
   moveDir,
   removeDir,
+  sizeToStr,
+  getLocalIsoString,
 }
 
 async function parallelProccess(
@@ -221,4 +222,13 @@ function sizeToStr(bytes, decimals = 2) {
   const suffix = ` ${suffixes[i]}`
 
   return prefix + size + suffix
+}
+
+function getLocalIsoString(utcDateInput = new Date()) {
+  const utcDate = new Date(utcDateInput)
+  const localDate = new Date(
+    utcDate.getTime() - utcDate.getTimezoneOffset() * 60000
+  )
+
+  return localDate.toISOString()
 }
