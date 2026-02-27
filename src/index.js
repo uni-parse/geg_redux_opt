@@ -21,7 +21,7 @@ const {
 // you can reduce it by 1 or so to let system do other things
 // ex: "cores - 1" will free 1 core to do othe things
 const cores = os.cpus().length
-const coresLimit = cores - 2
+const coresLimit = cores // - 1
 const CORES_LIMIT = Math.max(1, coresLimit)
 
 // set number of parallel Disk I/O read/write
@@ -202,7 +202,21 @@ async function main(baseDirInput, options = {}) {
         true
       )
 
-      meshResults.push(result1, result2)
+      // Data/Actors/Monsters
+      const result3 = await opt(
+        'Data/Actors/Monsters',
+        async (srcDir, outDir) =>
+          compressMesh(
+            CORES_LIMIT,
+            IO_LIMIT,
+            srcDir,
+            outDir,
+            maxMeshFloatDecimals
+          ),
+        true
+      )
+
+      meshResults.push(result1, result2, result3)
     }
 
     // clear temp dir -----------------------------------------

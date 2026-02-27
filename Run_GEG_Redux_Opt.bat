@@ -69,8 +69,9 @@ echo Do you want to Optimize Textures ?
 echo.
 echo convert textures to .DDS and compress with dxt1/dxt5
 echo.
+echo \Mods\GEG Redux\Data\BMP          [no resize]
 echo \Mods\GEG Redux\Data\MEDIA
-echo \Mods\GEG Redux\Data\BMP  [no resize]
+echo \Mods\GEG Redux\Data\HARDLIFE\BMP
 echo.
 choice /c yn /n /m "[Y/N]: "
 if errorlevel 1 set canOptTextures=true
@@ -155,6 +156,7 @@ echo opt text of unsupported files as 0302txt
 echo.
 echo \Mods\GEG Redux\Data\ACTORS\ITEMS
 echo \Mods\GEG Redux\Data\ACTORS\MONSTERS [repack .azp]
+echo \Data\Actors\Monsters                [repack .azp]
 echo.
 choice /c yn /n /m "[Y/N]: "
 if errorlevel 1 set canOptMesh=true
@@ -250,8 +252,9 @@ if %canOptTextures%==true (
   echo Min Resize Dimension: !minResizeDimension!px
   echo Max Resize Dimension: !maxResizeDimension!px
   echo target directories:
+  echo   \Mods\GEG Redux\Data\BMP          [no resize]
   echo   \Mods\GEG Redux\Data\MEDIA
-  echo   \Mods\GEG Redux\Data\BMP   [no resize]
+  echo   \Mods\GEG Redux\Data\HARDLIFE\BMP
   echo.
 )
 
@@ -261,6 +264,7 @@ if %canOptMesh%==true (
   echo target directories:
   echo   \Mods\GEG Redux\Data\ACTORS\ITEMS
   echo   \Mods\GEG Redux\Data\ACTORS\MONSTERS [repack .azp]
+  echo   \Data\Actors\Monsters                [repack .azp]
   echo.
 )
 
