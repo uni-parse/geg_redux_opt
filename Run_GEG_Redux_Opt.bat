@@ -155,8 +155,8 @@ echo convert to binary supported files as 0303txt
 echo opt text of unsupported files as 0302txt
 echo.
 echo \Mods\GEG Redux\Data\ACTORS\ITEMS
-echo \Mods\GEG Redux\Data\ACTORS\MONSTERS [repack .azp]
-echo \Data\Actors\Monsters                [repack .azp]
+echo \Mods\GEG Redux\Data\ACTORS\MONSTERS [repack azp]
+echo \Data\Actors\Monsters                [repack azp]
 echo.
 choice /c yn /n /m "[Y/N]: "
 if errorlevel 1 set canOptMesh=true
@@ -263,8 +263,8 @@ if %canOptMesh%==true (
   echo Max Float Decimals: !maxMeshFloatDecimals!
   echo target directories:
   echo   \Mods\GEG Redux\Data\ACTORS\ITEMS
-  echo   \Mods\GEG Redux\Data\ACTORS\MONSTERS [repack .azp]
-  echo   \Data\Actors\Monsters                [repack .azp]
+  echo   \Mods\GEG Redux\Data\ACTORS\MONSTERS [repack azp]
+  echo   \Data\Actors\Monsters                [repack azp]
   echo.
 )
 
