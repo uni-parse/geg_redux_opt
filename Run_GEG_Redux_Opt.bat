@@ -252,7 +252,7 @@ if %canOptTextures%==true (
   echo Min Resize Dimension: !minResizeDimension!px
   echo Max Resize Dimension: !maxResizeDimension!px
   echo target directories:
-  echo   \Mods\GEG Redux\Data\BMP          [no resize]
+  echo   \Mods\GEG Redux\Data\BMP              [no resize]
   echo   \Mods\GEG Redux\Data\MEDIA
   echo   \Mods\GEG Redux\Data\HARDLIFE\BMP
   echo.
