@@ -74,7 +74,7 @@
     - `/Mods/GEG Redux/Data/ACTORS/MONSTERS` (repack azp)
     - `/Data/Actors/Monsters` (repack azp)
   - convert 0303txt mesh files to binary
-    - by [MeshConvert.exe](https://github.com/uni-parse/geg_redux_opt/blob/main/tools/Microsoft%20DirectX%20SDK%20(June%202010)/MeshConvert.exe) utility from [DirectX sdk june 2010](https://archive.org/details/dxsdk_jun10)
+    - by [MeshConvert.exe](https://github.com/uni-parse/geg_redux_opt/raw/main/tools/Microsoft%20DirectX%20SDK%20(June%202010)/MeshConvert.exe) utility from [DirectX sdk june 2010](https://archive.org/details/dxsdk_jun10)
   - opt text of configs and 0302txt mesh files
     - clear `// comments`
     - clear white-space as: spaces, tabs, new lines
