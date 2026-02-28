@@ -84,11 +84,11 @@ if errorlevel 2 goto :ask_optMesh
 set default_resizePercent=80
 cls
 :ask_resizePercent
-echo Enter resize percentage %% (1~100)
-echo   example resize 80%% texture 1024x512px: 819x410px
+echo Enter Percentage %% to Resize Textures Dimension
+echo example resize 1024x512px by 80%% to be 819x410px
 echo.
 echo or press Enter to default to: %default_resizePercent%
-set /p resizePercent="> "
+set /p resizePercent="[1~100]: "
 if "!resizePercent!"=="" (
   set resizePercent=%default_resizePercent%
 )
@@ -121,12 +121,12 @@ set "args=!args! --resizePercent !resizePercent!"
 :: Prompt for max resize dimension ----------------------------
 set default_maxResizeDimension=512
 cls
-echo Enter max resize dimension in pixels
-echo to trim any over-sized textures
+echo Enter Max Texture Dimension can be Resized to
 echo so the output cannot be big than that
+echo and trim all over-sized textures
 echo.
-echo or press Enter to default to: %default_maxResizeDimension%
-set /p maxResizeDimension="> "
+echo or press Enter to default to: %default_maxResizeDimension%px
+set /p maxResizeDimension="[1~4096]: "
 if "!maxResizeDimension!"=="" (
   set maxResizeDimension=%default_maxResizeDimension%
 )
@@ -135,12 +135,12 @@ set "args=!args! --maxResizeDimension !maxResizeDimension!"
 :: Prompt for min resize dimension ----------------------------
 set default_minResizeDimension=64
 cls
-echo Enter min resize dimension in pixels
+echo Enter Min Texture Dimension can be Resized to
 echo so the output cannot be small than that
-echo And to skip resizing tiny textures
+echo and skip resizing tiny textures
 echo.
-echo or press Enter to default to: %default_minResizeDimension%
-set /p minResizeDimension="> "
+echo or press Enter to default to: %default_minResizeDimension%px
+set /p minResizeDimension="[1~4096]: "
 if "!minResizeDimension!"=="" (
   set minResizeDimension=%default_minResizeDimension%
 )
@@ -251,7 +251,7 @@ if %canOptTextures%==true (
   echo Resize Percent:       !resizePercent!%%
   echo Min Resize Dimension: !minResizeDimension!px
   echo Max Resize Dimension: !maxResizeDimension!px
-  echo target directories:
+  echo Target Directories:
   echo   \Mods\GEG Redux\Data\BMP              [no resize]
   echo   \Mods\GEG Redux\Data\MEDIA
   echo   \Mods\GEG Redux\Data\HARDLIFE\BMP
@@ -261,7 +261,7 @@ if %canOptTextures%==true (
 if %canOptMesh%==true (
   echo Optimize 3D Mesh files -----------------
   echo Max Float Decimals: !maxMeshFloatDecimals!
-  echo target directories:
+  echo Target Directories:
   echo   \Mods\GEG Redux\Data\ACTORS\ITEMS
   echo   \Mods\GEG Redux\Data\ACTORS\MONSTERS [repack azp]
   echo   \Data\Actors\Monsters                [repack azp]
