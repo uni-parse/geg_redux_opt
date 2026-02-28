@@ -32,7 +32,7 @@
     git clone "https://github.com/uni-parse/geg_redux_opt"
     cd geg_redux_opt
   - double click on `/Run_GEG_Redux_Opt.bat` and follow instructins
-  - wait (depend on your hardware it may took 5~25min)
+  - wait (depend on your hardware it may took 10~50min)
   - backup will be generated `/_geg_redux_opt/_backup/` 
     - you can remove it at the end
     - ⚠️ but keep it if you want to test different resize configs
@@ -55,9 +55,16 @@
 ## Texture Processing Pipeline
   - textures: .tga .dds .bmp .png .jpg .jpeg .webp
   - target directories:
-    - `/Mods/GEG Redux/Data/MEDIA`
     - `/Mods/GEG Redux/Data/BMP`          (no resize)
+    - `/Mods/GEG Redux/Data/MEDIA`
     - `/Mods/GEG Redux/Data/HARDLIFE/BMP`
+    - `/Data/HardLife.zip/BMP`            (no resize)
+    - `/Data/HardLife.zip/MEDIA`
+    - `/Data/HardLife.zip/HARDLIFE/BMP`
+    - `/Data/HardLife.zip/RENDEREDITEMS`
+    - `/Data/HardLife_En.zip/BMP`         (no resize)
+    - `/Data/HardLife_En.zip/MEDIA`
+    - `/Data/HardLife_En.zip/HARDLIFE/BMP`
   - skip/copy unsupported textures as .vtf ...
   - rename misFormated textures (required by magick.exe)
   - repair corrupt .dds headers (required by magick.exe)
@@ -72,7 +79,8 @@
   - target directories:
     - `/Mods/GEG Redux/Data/ACTORS/ITEMS`
     - `/Mods/GEG Redux/Data/ACTORS/MONSTERS` (repack azp)
-    - `/Data/Actors/Monsters` (repack azp)
+    - `/Data/Actors/Monsters`                (repack azp)
+    - `/Data/HardLife.zip/ACTORS`
   - convert 0303txt mesh files to binary
     - by [MeshConvert.exe](https://github.com/uni-parse/geg_redux_opt/raw/main/tools/Microsoft%20DirectX%20SDK%20(June%202010)/MeshConvert.exe) utility from [DirectX sdk june 2010](https://archive.org/details/dxsdk_jun10)
   - opt text of configs and 0302txt mesh files
