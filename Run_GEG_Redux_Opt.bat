@@ -72,6 +72,13 @@ echo.
 echo \Mods\GEG Redux\Data\BMP          [no resize]
 echo \Mods\GEG Redux\Data\MEDIA
 echo \Mods\GEG Redux\Data\HARDLIFE\BMP
+echo \Data\HardLife.zip\BMP            [no resize]
+echo \Data\HardLife.zip\MEDIA
+echo \Data\HardLife.zip\HARDLIFE\BMP
+echo \Data\HardLife.zip\RENDEREDITEMS
+echo \Data\HardLife_En.zip\BMP         [no resize]
+echo \Data\HardLife_En.zip\MEDIA
+echo \Data\HardLife_En.zip\HARDLIFE\BMP
 echo.
 choice /c yn /n /m "[Y/N]: "
 if errorlevel 1 set canOptTextures=true
@@ -157,6 +164,7 @@ echo.
 echo \Mods\GEG Redux\Data\ACTORS\ITEMS
 echo \Mods\GEG Redux\Data\ACTORS\MONSTERS [repack azp]
 echo \Data\Actors\Monsters                [repack azp]
+echo \Data\HardLife.zip\ACTORS
 echo.
 choice /c yn /n /m "[Y/N]: "
 if errorlevel 1 set canOptMesh=true
@@ -255,6 +263,13 @@ if %canOptTextures%==true (
   echo   \Mods\GEG Redux\Data\BMP              [no resize]
   echo   \Mods\GEG Redux\Data\MEDIA
   echo   \Mods\GEG Redux\Data\HARDLIFE\BMP
+  echo   \Data\HardLife.zip\BMP                [no resize]
+  echo   \Data\HardLife.zip\MEDIA
+  echo   \Data\HardLife.zip\HARDLIFE\BMP
+  echo   \Data\HardLife.zip\RENDEREDITEMS
+  echo   \Data\HardLife_En.zip\BMP             [no resize]
+  echo   \Data\HardLife_En.zip\MEDIA
+  echo   \Data\HardLife_En.zip\HARDLIFE\BMP
   echo.
 )
 
@@ -265,6 +280,7 @@ if %canOptMesh%==true (
   echo   \Mods\GEG Redux\Data\ACTORS\ITEMS
   echo   \Mods\GEG Redux\Data\ACTORS\MONSTERS [repack azp]
   echo   \Data\Actors\Monsters                [repack azp]
+  echo   \Data\HardLife.zip\ACTORS
   echo.
 )
 
