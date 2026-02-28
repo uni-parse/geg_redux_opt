@@ -414,7 +414,7 @@ async function convertToDDS_texconv(
     flags += ` --height ${newHeight}`
   }
 
-  const outDir = path.direname(outPath)
+  const outDir = path.dirname(outPath)
   await texConv(img.path, flags, outDir)
 }
 
