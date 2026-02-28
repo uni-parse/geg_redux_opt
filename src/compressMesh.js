@@ -41,6 +41,20 @@ async function compressMesh(
     else otherPaths.push(p)
   }
 
+  console.log(
+    `\n📊 Found ${allPaths.length} total files:\n` +
+      `   3d Mesh files: ${meshPaths.length}\n` +
+      `   Config files: ${configPaths.length}\n` +
+      `   Other files: ${otherPaths.length}\n`
+  )
+
+  if (SHOW_MORE_LOGS) {
+    const otherFiles = new Set(
+      otherPaths.map(p => path.extname(p).toLowerCase())
+    )
+    console.log('other files: ', [...otherFiles].join(' '))
+  }
+
   // copy other files
   await parallelProccess(
     'copy other files',

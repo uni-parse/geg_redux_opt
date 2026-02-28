@@ -54,33 +54,38 @@ async function compressImgs(
   minResizeDimension,
   maxResizeDimension
 ) {
-  const filePaths = await getAllFilePaths(baseSrcDir)
+  const allPaths = await getAllFilePaths(baseSrcDir)
+  const imgPaths = []
+  const otherPaths = []
 
-  // Filter supported imgs
-  const imgPaths = filePaths.filter(p =>
-    EXTENSIONS.includes(path.extname(p).toLowerCase())
-  )
+  for (const p of allPaths) {
+    const ext = path.extname(p).toLowerCase()
+    if (EXTENSIONS.includes(ext)) imgPaths.push(p)
+    else otherPaths.push(p)
+  }
+
   console.log(
-    `\n📊 Found ${filePaths.length} total files:\n` +
-      `   📷 Images: ${imgPaths.length}\n` +
-      `   📄 Other: ${filePaths.length - imgPaths.length}\n`
+    `\n📊 Found ${allPaths.length} total files:\n` +
+      `   📷 Textures: ${imgPaths.length}\n` +
+      `   📄 Other files: ${otherPaths.length}\n`
   )
+
+  if (SHOW_MORE_LOGS) {
+    const otherFiles = new Set(
+      otherPaths.map(p => path.extname(p).toLowerCase())
+    )
+    console.log('other files: ', [...otherFiles].join(' '))
+  }
 
   // Copy unSupported files
-  const unSupportedPaths = filePaths.filter(
-    p => !EXTENSIONS.includes(path.extname(p).toLowerCase())
-  )
   await parallelProccess(
     'Copy unSupported Files',
-    unSupportedPaths,
+    otherPaths,
     IO_LIMIT,
     async p => {
       const relPath = path.relative(baseSrcDir, p)
       const outPath = path.join(baseDestDir, relPath)
       await copyFile(p, outPath)
-
-      if (SHOW_MORE_LOGS)
-        console.log(`\n\n📋 Copied File "${outPath}"`)
     }
   )
 
