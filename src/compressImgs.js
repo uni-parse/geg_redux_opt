@@ -430,7 +430,7 @@ async function convertToDDS_magick(
   flags += ' -define dds:fast-mipmaps=true'
   flags += ' -define dds:weighted=false'
 
-  const compression = await decideCompression(img)
+  const compression = await decideCompression(img, true)
   flags += ` -define dds:compression=${compression}`
 
   if (img.depth > 8) flags += ' -depth 8'
@@ -447,8 +447,14 @@ async function convertToDDS_magick(
   await magickConv(img.path, flags, outPath)
 }
 
-async function decideCompression(img) {
+async function decideCompression(
+  img,
+  isMagickFallback = false
+) {
   if (!img.hasAlpha) return 'dxt1'
+
+  // magick.exe have issue with black transparancy on dxt1
+  if (isMagickFallback) return 'dxt5'
 
   const verbose = await magickVerbose(img.path)
   if (!verbose) return 'dxt5' // fallback
