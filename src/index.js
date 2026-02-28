@@ -58,9 +58,6 @@ if (require.main === module) {
 }
 
 async function main(baseDirInput, options = {}) {
-  const timerLabel = 'Total Time'
-  console.time(timerLabel)
-
   const {
     canMigrate,
     canOptMesh,
@@ -71,6 +68,9 @@ async function main(baseDirInput, options = {}) {
     maxResizeDimension,
     maxMeshFloatDecimals,
   } = options
+
+  const timerLabel = 'Total Time'
+  console.time(timerLabel)
 
   try {
     const baseDir = await validateBaseDir(baseDirInput)
@@ -90,129 +90,72 @@ async function main(baseDirInput, options = {}) {
     if (canMigrate)
       await migrate(baseDir, baseBackupDir, baseCacheDir)
 
-    const opt = async (relDir, callback, isAzp = false) => {
-      const srcDir = path.resolve(baseDir, relDir)
-      const tempDir = path.resolve(baseTempDir, relDir)
-      const backupDir = path.resolve(baseBackupDir, relDir)
-      const isValidSrcDir = await checkDir(srcDir)
-      const isValidBackupDir = await checkDir(backupDir)
-
-      if (!isValidSrcDir && !isValidBackupDir) return
-
-      // create backup
-      if (!isValidBackupDir) await moveDir(srcDir, backupDir)
-
-      // clear old temp (if exist)
-      await removeDir(tempDir)
-
-      // opt callback
-      const result = isAzp
-        ? await patchAzp(backupDir, tempDir, callback)
-        : await callback(backupDir, tempDir)
-
-      // save
-      await moveDir(tempDir, srcDir)
-
-      // clear new temp
-      await removeDir(tempDir)
-
-      return result
-    }
+    const opt = (relDir, callback, isAzp = false) =>
+      _opt(
+        relDir,
+        baseDir,
+        baseBackupDir,
+        baseTempDir,
+        callback,
+        isAzp
+      )
+    const optTextures = (src, dest) =>
+      compressImgs(
+        CORES_LIMIT,
+        IO_LIMIT,
+        src,
+        dest,
+        resizePercent,
+        minResizeDimension,
+        maxResizeDimension
+      )
+    const optTexturesWithoutResize = (src, dest) =>
+      compressImgs(
+        CORES_LIMIT,
+        IO_LIMIT,
+        src,
+        dest,
+        // do not resize, it have apsolute ui/sprite textures
+        100, // resizePercent,
+        99999, // minResizeDimension,
+        99999 // maxResizeDimension
+      )
+    const optMesh = (src, dest) =>
+      compressMesh(
+        CORES_LIMIT,
+        IO_LIMIT,
+        src,
+        dest,
+        maxMeshFloatDecimals
+      )
 
     const results = { textures: [], mesh: [] }
 
     // opt textures -------------------------------------------
     if (canOptTextures)
-      results.textures = [
-        // Mods/GEG Redux/Data/BMP
-        await opt('Mods/GEG Redux/Data/BMP', (srcDir, outDir) =>
-          compressImgs(
-            CORES_LIMIT,
-            IO_LIMIT,
-            srcDir,
-            outDir,
-            // do not resize, it have aprolute ui/sprite textures
-            100, // resizePercent,
-            99999, // minResizeDimension,
-            99999 // maxResizeDimension
-          )
-        ),
-
-        // Mods/GEG Redux/Data/HARDLIFE/BMP
+      results.textures.push(
+        await opt('Mods/GEG Redux/Data/MEDIA', optTextures),
         await opt(
           'Mods/GEG Redux/Data/HARDLIFE/BMP',
-          (srcDir, outDir) =>
-            compressImgs(
-              CORES_LIMIT,
-              IO_LIMIT,
-              srcDir,
-              outDir,
-              resizePercent,
-              minResizeDimension,
-              maxResizeDimension
-            )
+          optTextures
         ),
-
-        // Mods/GEG Redux/Data/MEDIA
         await opt(
-          'Mods/GEG Redux/Data/MEDIA',
-          (srcDir, outDir) =>
-            compressImgs(
-              CORES_LIMIT,
-              IO_LIMIT,
-              srcDir,
-              outDir,
-              resizePercent,
-              minResizeDimension,
-              maxResizeDimension
-            )
-        ),
-      ]
+          'Mods/GEG Redux/Data/BMP',
+          optTexturesWithoutResize
+        )
+      )
 
     // opt 3d mesh --------------------------------------------
     if (canOptMesh)
-      results.mesh = [
-        // Mods/GEG Redux/Data/ACTORS/ITEMS
-        await opt(
-          'Mods/GEG Redux/Data/ACTORS/ITEMS',
-          (srcDir, outDir) =>
-            compressMesh(
-              CORES_LIMIT,
-              IO_LIMIT,
-              srcDir,
-              outDir,
-              maxMeshFloatDecimals
-            )
-        ),
-
-        // Mods/GEG Redux/Data/ACTORS/MONSTERS
+      results.mesh.push(
+        await opt('Mods/GEG Redux/Data/ACTORS/ITEMS', optMesh),
+        await opt('Data/Actors/Monsters', optMesh, true),
         await opt(
           'Mods/GEG Redux/Data/ACTORS/MONSTERS',
-          async (srcDir, outDir) =>
-            compressMesh(
-              CORES_LIMIT,
-              IO_LIMIT,
-              srcDir,
-              outDir,
-              maxMeshFloatDecimals
-            ),
+          optMesh,
           true
-        ),
-
-        // Data/Actors/Monsters
-        await opt(
-          'Data/Actors/Monsters',
-          async (srcDir, outDir) =>
-            compressMesh(
-              CORES_LIMIT,
-              IO_LIMIT,
-              srcDir,
-              outDir,
-              maxMeshFloatDecimals
-            ),
-          true
-        ),
-      ]
+        )
+      )
 
     // clear temp dir -----------------------------------------
     await removeDir(baseTempDir)
@@ -270,6 +213,42 @@ async function validateBaseDir(baseDirInput) {
     )
 
   return baseDir
+}
+
+async function _opt(
+  relDir,
+  baseDir,
+  baseBackupDir,
+  baseTempDir,
+  callback,
+  isAzp = false
+) {
+  const srcDir = path.resolve(baseDir, relDir)
+  const backupDir = path.resolve(baseBackupDir, relDir)
+  const tempDir = path.resolve(baseTempDir, relDir)
+
+  const isValidSrcDir = await checkDir(srcDir)
+  const isValidBackupDir = await checkDir(backupDir)
+  if (!isValidSrcDir && !isValidBackupDir) return
+
+  // create backup
+  if (!isValidBackupDir) await moveDir(srcDir, backupDir)
+
+  // clear old temp (if exist)
+  await removeDir(tempDir)
+
+  // opt callback
+  const result = isAzp
+    ? await patchAzp(backupDir, tempDir, callback)
+    : await callback(backupDir, tempDir)
+
+  // save
+  await moveDir(tempDir, srcDir)
+
+  // clear new temp
+  await removeDir(tempDir)
+
+  return result
 }
 
 async function patchAzp(srcDir, outDir, callback) {
