@@ -4,7 +4,12 @@ const process = require('node:process')
 const os = require('node:os')
 const { compressImgs } = require('./compressImgs')
 const { compressMesh } = require('./compressMesh')
-const { unpackAZP, repackAZP } = require('./tools')
+const {
+  unpackAZP,
+  repackAZP,
+  unpackZip,
+  updateZip,
+} = require('./tools')
 const {
   checkDir,
   copyFile,
@@ -90,6 +95,14 @@ async function main(baseDirInput, options = {}) {
     if (canMigrate)
       await migrate(baseDir, baseBackupDir, baseCacheDir)
 
+    const repackZip = (relPath, callback) =>
+      patchZip(
+        relPath,
+        baseDir,
+        baseBackupDir,
+        baseTempDir,
+        callback
+      )
     const opt = (relDir, callback, isAzp = false) =>
       _opt(
         relDir,
@@ -156,6 +169,31 @@ async function main(baseDirInput, options = {}) {
           true
         )
       )
+
+    // repack zips --------------------------------------------
+    if (canOptTextures)
+      await repackZip('Data/HardLife_En.zip', async opt => {
+        if (canOptTextures)
+          results.textures.push(
+            await opt('MEDIA', optTextures),
+            await opt('HARDLIFE/BMP', optTextures),
+            await opt('BMP', optTexturesWithoutResize)
+          )
+      })
+
+    if (canOptTextures || canOptMesh)
+      await repackZip('Data/HardLife.zip', async opt => {
+        if (canOptTextures)
+          results.textures.push(
+            await opt('MEDIA', optTextures),
+            await opt('RENDEREDITEMS', optTextures),
+            await opt('HARDLIFE/BMP', optTextures),
+            await opt('BMP', optTexturesWithoutResize)
+          )
+
+        if (canOptMesh)
+          results.mesh.push(await opt('ACTORS', optMesh))
+      })
 
     // clear temp dir -----------------------------------------
     await removeDir(baseTempDir)
@@ -320,6 +358,97 @@ async function patchAzp(srcDir, outDir, callback) {
   await removeDir(baseUnpackOptDir)
 
   return result
+}
+
+async function patchZip(
+  zipRelPath,
+  baseDir,
+  baseBackupDir,
+  baseTempDir,
+  callback
+) {
+  const zipSrcPath = path.resolve(baseDir, zipRelPath)
+  const zipBackupPath = path.resolve(baseBackupDir, zipRelPath)
+  const zipTempPath = path.resolve(baseTempDir, zipRelPath)
+
+  const isValidZipSrcPath = await checkDir(zipSrcPath)
+  const isValidZipBackupPath = await checkDir(zipBackupPath)
+  if (!isValidZipSrcPath && !isValidZipBackupPath) return
+
+  // create backup
+  if (!isValidZipBackupPath) {
+    const parentDir = path.dirname(zipBackupPath)
+    await fs.mkdir(parentDir, { recursive: true })
+
+    await fs.rename(zipSrcPath, zipBackupPath)
+  }
+
+  // clear old temp (if exist)
+  const zipExt = path.extname(zipRelPath)
+  const zipBasename = path.basename(zipRelPath, zipExt)
+  const zipRelDir = path.dirname(zipRelPath)
+  const zipTempDir = path.resolve(
+    baseTempDir,
+    zipRelDir,
+    zipBasename
+  )
+  await removeDir(zipTempDir)
+
+  // copy zip to temp
+  await copyFile(zipBackupPath, zipTempPath)
+
+  const baseUnpackDir = path.resolve(zipTempDir, '_unpack')
+  const baseUnpackOptDir = path.resolve(
+    zipTempDir,
+    '_unpack_opt'
+  )
+
+  const opt = async (targetDir, callback) => {
+    console.log(
+      `\nunpacking zip ... "${path.join(
+        zipRelPath,
+        targetDir
+      )}"`
+    )
+    await unpackZip(
+      zipBackupPath,
+      baseUnpackDir,
+      targetDir,
+      `-mmt${CORES_LIMIT}`
+    )
+
+    const unpackDir = path.join(baseUnpackDir, targetDir)
+    const unpackOptDir = path.join(baseUnpackOptDir, targetDir)
+
+    // opt callpack
+    const result = await callback(unpackDir, unpackOptDir)
+
+    // update zip
+    console.log(
+      `\nupdating zip ... "${path.join(
+        path.relative(baseDir, zipTempPath),
+        targetDir
+      )}"`
+    )
+    await updateZip(
+      zipTempPath,
+      unpackOptDir,
+      `-mmt${CORES_LIMIT}`
+    )
+
+    return result
+  }
+
+  // opt callbacks
+  await callback(opt)
+
+  // save
+  await moveDir(zipTempPath, zipSrcPath)
+
+  // delete new temp
+  await removeDir(baseUnpackDir)
+  await removeDir(baseUnpackOptDir)
+  await removeDir(zipTempDir)
 }
 
 async function migrate(baseDir, baseBackupDir, baseCacheDir) {
