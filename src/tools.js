@@ -8,6 +8,9 @@ module.exports = {
   magickConv,
   texConv,
   meshConv,
+  unpackZip,
+  updateZip,
+  packZip,
   unpackAZP,
   repackAZP,
 }
@@ -30,6 +33,12 @@ const MESHCONVERT_EXE_PATH = path.join(
   TOOLS_DIR,
   'Microsoft DirectX SDK (June 2010)',
   'MeshConvert.exe'
+)
+
+const ZIP7_EXE_PATH = path.join(
+  TOOLS_DIR,
+  '7z2600-extra',
+  '7za.exe'
 )
 
 const AZP_EXE_PATH = path.join(
@@ -118,6 +127,63 @@ async function meshConv(inputPath, flags, outPath) {
     throw new Error(output)
 
   return output
+}
+
+async function unpackZip(
+  zipPath,
+  unpackDir,
+  targetPath,
+  flags
+) {
+  let command = `"${ZIP7_EXE_PATH}"`
+  command += ` x`
+  command += ` "${zipPath}"`
+
+  // extract only file or dir
+  if (targetPath) command += ` "${targetPath}"`
+
+  if (unpackDir) {
+    await fs.mkdir(unpackDir, { recursive: true })
+    command += ` -o"${unpackDir}"`
+  }
+
+  command += ` -y`
+
+  if (flags) command += ` ${flags}`
+  // -mmt[N] N CPU threads used
+
+  return await execAsync(command)
+}
+
+async function updateZip(zipPath, updatedPath, flags) {
+  let command = `"${ZIP7_EXE_PATH}"`
+  command += `  u`
+  command += ` "${zipPath}"`
+  command += ` "${updatedPath}"` // file or dir
+  command += ` -y`
+
+  if (flags) command += ` ${flags}`
+  // -mmt[N] N CPU threads used
+
+  return await execAsync(command)
+}
+
+async function packZip(unpackDir, zipPath, flags) {
+  const parentDir = path.dirname(zipPath)
+  await fs.mkdir(parentDir, { recursive: true })
+
+  let command = `"${ZIP7_EXE_PATH}"`
+  command += `  a`
+
+  if (flags) command += ` ${flags}`
+  // -mx[N]  N 1~9 compression lvl
+  // -mmt[N] N CPU threads used
+
+  command += ` "${zipPath}"`
+  command += ` "${unpackDir}"`
+  command += ` -y`
+
+  return await execAsync(command)
 }
 
 async function unpackAZP(azpPath, unpackDir) {
