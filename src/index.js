@@ -224,7 +224,8 @@ async function main(baseDirInput, options = {}) {
     }
 
     // show summary -------------------------------------------
-    console.log(`\n${'═'.repeat(60)}`)
+    const canShowSummary = canOptTextures || canOptMesh
+    if (canShowSummary) console.log(`\n${'═'.repeat(60)}`)
     if (canOptTextures && results.textures.length > 0)
       showSummary(
         'Final Textures Optimization Summary',
@@ -235,7 +236,7 @@ async function main(baseDirInput, options = {}) {
         'Final 3d Mesh Optimization Summary',
         results.mesh
       )
-    console.log('═'.repeat(60))
+    if (canShowSummary) console.log('═'.repeat(60))
   } catch (error) {
     console.error('❌ Fatal error in main:', error)
   } finally {
