@@ -233,41 +233,52 @@ async function compressImgs(
       await fs.mkdir(parentdir, { recursive: true })
 
       try {
-        await convertToDDS_texconv(
-          img,
-          outPath,
-          resizePercent,
-          minResizeDimension,
-          maxResizeDimension
-        )
-      } catch (error) {
-        if (SHOW_MORE_LOGS)
-          console.warn(
-            `\n  Warn: texconv.exe failed ❌, "${img.relPath}"\n` +
-              `  fallback to magick.exe ...`
-          )
+        const transparancy = await checkTransparancy(img)
+        const isOpaque = transparancy === 0
+        const isBinaryTransparancy = transparancy === 1
+        const isSmoothTransparancy = transparancy === 2
 
-        try {
-          await convertToDDS_magick(
+        const texConvToDDS = compression =>
+          convertToDDS_texconv(
             img,
             outPath,
             resizePercent,
             minResizeDimension,
-            maxResizeDimension
+            maxResizeDimension,
+            compression
+          )
+        const magickConvToDDS = compression =>
+          convertToDDS_magick(
+            img,
+            outPath,
+            resizePercent,
+            minResizeDimension,
+            maxResizeDimension,
+            compression
           )
 
-          if (SHOW_MORE_LOGS)
-            console.log(
-              `  magick.exe fallback seccess ✅, "${img.relPath}"`
-            )
+        try {
+          if (isOpaque || isBinaryTransparancy)
+            await texConvToDDS('dxt1')
+          else if (isSmoothTransparancy)
+            await texConvToDDS('dxt5')
         } catch (error) {
           if (SHOW_MORE_LOGS)
             console.warn(
-              `  Warn: magick.exe failed ❌, "${img.relPath}"\n` +
-                `  fallback to copy`
+              `\n  Warn: texconv.exe failed, "${img.relPath}"\n` +
+                `  fallback to magick.exe ...`
             )
-          await copyFile(img.path, outPath)
+
+          // magick.exe can black/scuff transparancy on dxt1
+          await magickConvToDDS(isOpaque ? 'dxt1' : 'dxt5')
         }
+      } catch (error) {
+        if (SHOW_MORE_LOGS)
+          console.warn(
+            `  Warn: magick.exe failed, "${img.relPath}"\n` +
+              `  fallback to copy ...`
+          )
+        await copyFile(img.path, outPath)
       }
 
       // Remove extra temp renamed textures
@@ -398,22 +409,21 @@ async function convertToDDS_texconv(
   outPath,
   resizePercent,
   minResizeDimension,
-  maxResizeDimension
+  maxResizeDimension,
+  compression
 ) {
   let flags = ''
   flags += ' --single-proc' // disable multi thread
   flags += ` --separate-alpha` // fix black transparancy
   flags += ' --file-type dds'
   flags += ' --mip-levels 4'
+  flags += ` --format ${compression}`
 
   // gamma correction
   if (img.channels.includes('srgb')) flags += ' -srgb'
 
   if (!img.filename.includes(img.id))
     flags += ` --suffix "${img.id}"`
-
-  const compression = await decideCompression(img)
-  flags += ` --format ${compression}`
 
   const { canResize, newWidth, newHeight } =
     getResizeDimensions(
@@ -436,15 +446,14 @@ async function convertToDDS_magick(
   outPath,
   resizePercent,
   minResizeDimension,
-  maxResizeDimension
+  maxResizeDimension,
+  compression
 ) {
   let flags = ''
   flags += ' -limit thread 1' // disable multi thread
   flags += ' -define dds:mipmaps=4'
   flags += ' -define dds:fast-mipmaps=true'
   flags += ' -define dds:weighted=false'
-
-  const compression = await decideCompression(img, true)
   flags += ` -define dds:compression=${compression}`
 
   if (img.depth > 8) flags += ' -depth 8'
@@ -461,37 +470,39 @@ async function convertToDDS_magick(
   await magickConv(img.path, flags, outPath)
 }
 
-async function decideCompression(
-  img,
-  isMagickFallback = false
-) {
-  if (!img.hasAlpha) return 'dxt1'
-
-  // magick.exe have issue with black transparancy on dxt1
-  if (isMagickFallback) return 'dxt5'
+async function checkTransparancy(img) {
+  if (!img.hasAlpha) return 0
 
   const threads = 1 // disable multi thread
   const verbose = await magickVerbose(img.path, threads)
-  if (!verbose) return 'dxt5' // fallback
+  if (!verbose) return 2 // fallback
 
   // Check alpha channel depth
   const depthMatch = verbose.match(/Alpha:\s+(\d+)-bit/)
-  if (!depthMatch) return 'dxt1' // No alpha channel
+  if (!depthMatch) return 0 // No alpha channel
 
   const alphaDepth = parseInt(depthMatch[1])
-  if (alphaDepth === 1) return 'dxt1' // Binary transparency
 
-  // Check if alpha unused
-  const minMatch = verbose.match(
-    /Alpha:\s+min:\s+\d+\s+\(([\d.]+)\)/
+  // Check alpha min value to detect semi-transparency
+  const minMaxMatch = verbose.match(
+    /Alpha:\s+min:\s+\d+\s+\(([\d.]+)\)\s+max:\s+\d+\s+\(([\d.]+)\)/
   )
-  if (minMatch) {
-    const min = parseFloat(minMatch[1])
-    const isOpaque = min === 1.0
-    if (isOpaque) return 'dxt1'
+
+  if (minMaxMatch) {
+    const min = parseFloat(minMaxMatch[1])
+    const max = parseFloat(minMaxMatch[2])
+
+    // Opaque, no transparancy
+    if (min === 1.0) return 0
+
+    // Invisible, fully transparant
+    if (max === 0.0) return 1
+
+    // Binary transparency
+    if (alphaDepth === 1 && min === 0.0 && max === 1.0) return 1
   }
 
-  return 'dxt5' // Smooth transparency
+  return 2 // Smooth transparency
 }
 
 async function detectImgFormat(inputPath) {
