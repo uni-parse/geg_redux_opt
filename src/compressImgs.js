@@ -374,8 +374,9 @@ async function getImageStatus(inputPath) {
   const format = '%B|%w|%h|%[depth]|%[channels]'
   const separator = '|'
 
+  const threads = 1 // disable multi thread
   const [size, width, height, depth, channels] =
-    await magickIdentify(inputPath, format, separator)
+    await magickIdentify(inputPath, format, separator, threads)
 
   return {
     size: parseInt(size),
@@ -429,6 +430,7 @@ async function convertToDDS_magick(
   maxResizeDimension
 ) {
   let flags = ''
+  flags += ' -limit thread 1' // disable multi thread
   flags += ' -define dds:mipmaps=4'
   flags += ' -define dds:fast-mipmaps=true'
   flags += ' -define dds:weighted=false'
@@ -459,7 +461,8 @@ async function decideCompression(
   // magick.exe have issue with black transparancy on dxt1
   if (isMagickFallback) return 'dxt5'
 
-  const verbose = await magickVerbose(img.path)
+  const threads = 1 // disable multi thread
+  const verbose = await magickVerbose(img.path, threads)
   if (!verbose) return 'dxt5' // fallback
 
   // Check alpha channel depth

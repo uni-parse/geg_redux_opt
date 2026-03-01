@@ -47,9 +47,18 @@ const AZP_EXE_PATH = path.join(
   'azp.exe'
 )
 
-async function magickIdentify(inputPath, format, separator) {
+async function magickIdentify(
+  inputPath,
+  format,
+  separator,
+  threads
+) {
   const flags = ['identify']
+
+  if (threads) flags.push('-limit', 'thread', threads)
+
   if (format) flags.push('-format', format)
+
   flags.push(inputPath)
 
   const output = await spawnAsync(MAGICK_EXE_PATH, flags)
@@ -64,12 +73,14 @@ async function magickIdentify(inputPath, format, separator) {
   return statusArr
 }
 
-async function magickVerbose(inputPath) {
-  return await spawnAsync(MAGICK_EXE_PATH, [
-    inputPath,
-    '-verbose',
-    'info:',
-  ])
+async function magickVerbose(inputPath, threads) {
+  const flags = [inputPath]
+
+  if (threads) flags.push('-limit', 'thread', threads)
+
+  flags.push('-verbose', 'info:')
+
+  return await spawnAsync(MAGICK_EXE_PATH, flags)
 }
 
 async function magickConv(inputPath, flags, outPath) {
