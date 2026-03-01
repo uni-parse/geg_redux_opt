@@ -3,6 +3,7 @@ setlocal enabledelayedexpansion
 
 :: Clear all variables at start
 set "args="
+set "threads="
 set "cache_dir="
 set "base_dir="
 set "canOptMesh="
@@ -105,7 +106,7 @@ set "resizePercent=!resizePercent:%%=!"
 
 echo !resizePercent!|findstr /r "^[0-9][0-9]*$" >nul || (
   cls
-  echo Invalid input. Must be a number.
+  echo Invalid input "!resizePercent!". Must be a number.
   echo.
   goto :ask_resizePercent
 )
@@ -245,12 +246,43 @@ if errorlevel 1 set canMigrate=true
 if errorlevel 2 set canMigrate=false
 set "args=!args! --canMigrate !canMigrate!"
 
+:: Prompt for cores -------------------------------------------
+set /a default_threads=%NUMBER_OF_PROCESSORS% - 1
+:ask_threads
+echo How much CPU threads do you want to assign?
+echo your total CPU threads are: %NUMBER_OF_PROCESSORS%
+echo.
+echo More threads means faster process
+echo But using all may cause the system to become unresponsive
+echo.
+echo or press Enter to default to: %default_threads%
+set /p threads="[1-%NUMBER_OF_PROCESSORS%]: "
+
+if "!threads!"=="" (
+  set threads=!default_threads!
+) else (
+  echo !threads!|findstr /r "^[0-9][0-9]*$" >nul || (
+    cls
+    echo Invalid input "!threads!". Must be a number.
+    echo.
+    goto :ask_threads
+  )
+)
+
+if !threads! lss 1 set threads=1
+if !threads! gtr %NUMBER_OF_PROCESSORS% (
+  set threads=%NUMBER_OF_PROCESSORS%
+)
+
+set "args=!args! --threads !threads!"
+
 :: summary ----------------------------------------------------
 cls
 echo ========================================
 echo              SUMMARY
 echo ========================================
 echo.
+echo CPU threads used:     !threads! / %NUMBER_OF_PROCESSORS%
 echo HLA.exe Directory:    "!base_dir!"
 echo.
 

@@ -21,14 +21,6 @@ const {
   sizeToStr,
 } = require('./utilities')
 
-// set number of parallel processing
-// by default it use full cpu cores to finish fast
-// you can reduce it by 1 or so to let system do other things
-// ex: "cores - 1" will free 1 core to do othe things
-const cores = os.cpus().length
-const coresLimit = cores // - 1
-const CORES_LIMIT = Math.max(1, coresLimit)
-
 // set number of parallel Disk I/O read/write
 // depend on if you have HDD/SSD/NVMe
 const IO_LIMIT = 20 // default to SSD
@@ -64,6 +56,7 @@ if (require.main === module) {
 
 async function main(baseDirInput, options = {}) {
   const {
+    threads = Math.max(1, os.cpus().length - 1),
     canMigrate,
     canOptMesh,
     canOptTextures,
@@ -114,7 +107,7 @@ async function main(baseDirInput, options = {}) {
       )
     const optTextures = (src, dest) =>
       compressImgs(
-        CORES_LIMIT,
+        threads,
         IO_LIMIT,
         src,
         dest,
@@ -124,7 +117,7 @@ async function main(baseDirInput, options = {}) {
       )
     const optTexturesWithoutResize = (src, dest) =>
       compressImgs(
-        CORES_LIMIT,
+        threads,
         IO_LIMIT,
         src,
         dest,
@@ -135,7 +128,7 @@ async function main(baseDirInput, options = {}) {
       )
     const optMesh = (src, dest) =>
       compressMesh(
-        CORES_LIMIT,
+        threads,
         IO_LIMIT,
         src,
         dest,
@@ -319,7 +312,7 @@ async function patchAzp(srcDir, outDir, callback) {
   const unpackDirArr = await parallelProccess(
     'unpack .azp files',
     azpPaths,
-    CORES_LIMIT,
+    threads,
     async azpPath => {
       const ext = path.extname(azpPath)
       const basename = path.basename(azpPath, ext)
@@ -343,7 +336,7 @@ async function patchAzp(srcDir, outDir, callback) {
   await parallelProccess(
     'repack .azp files',
     unpackOptDirs,
-    CORES_LIMIT,
+    threads,
     async unpackOptDir => {
       const basename = path.basename(unpackOptDir)
       const azpPath = path.join(outDir, `${basename}.azp`)
@@ -414,7 +407,7 @@ async function patchZip(
       zipBackupPath,
       baseUnpackDir,
       targetDir,
-      `-mmt${CORES_LIMIT}`
+      `-mmt${threads}`
     )
 
     const unpackDir = path.join(baseUnpackDir, targetDir)
@@ -430,11 +423,7 @@ async function patchZip(
         targetDir
       )}"`
     )
-    await updateZip(
-      zipTempPath,
-      unpackOptDir,
-      `-mmt${CORES_LIMIT}`
-    )
+    await updateZip(zipTempPath, unpackOptDir, `-mmt${threads}`)
 
     return result
   }
