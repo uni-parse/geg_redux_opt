@@ -57,25 +57,23 @@ async function compressImgs(
   const allPaths = await getAllFilePaths(baseSrcDir)
   const imgPaths = []
   const otherPaths = []
+  const otherExtentions = new Set()
 
   for (const p of allPaths) {
     const ext = path.extname(p).toLowerCase()
     if (EXTENSIONS.includes(ext)) imgPaths.push(p)
-    else otherPaths.push(p)
+    else {
+      otherPaths.push(p)
+      otherExtentions.add(path.extname(p).toLowerCase())
+    }
   }
 
   console.log(
     `\n📊 Found ${allPaths.length} total files:\n` +
       `   📷 Textures: ${imgPaths.length}\n` +
-      `   📄 Other files: ${otherPaths.length}\n`
+      `   📄 Other files: ${otherPaths.length}` +
+      ` [${[...otherExtentions].join(' ')}]\n`
   )
-
-  if (SHOW_MORE_LOGS) {
-    const otherFiles = new Set(
-      otherPaths.map(p => path.extname(p).toLowerCase())
-    )
-    console.log('other files: ', [...otherFiles].join(' '))
-  }
 
   // Copy unSupported files
   await parallelProccess(
