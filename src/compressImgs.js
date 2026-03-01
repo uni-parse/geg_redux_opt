@@ -130,7 +130,7 @@ async function compressImgs(
   // Flag misFormated imgs
   // Flag Corrupted .dds imgs
   const misFormat_or_curroptDDS_imgs = await parallelProccess(
-    'Flag misFormat / Corrupt .dds imgs',
+    'Flag misFormat imgs / Corrupt .dds imgs',
     imgs,
     IO_LIMIT,
     async img => {
