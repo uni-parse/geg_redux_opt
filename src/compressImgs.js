@@ -196,6 +196,7 @@ async function compressImgs(
         height,
         dimensions,
         depth,
+        channels,
         hasAlpha,
       } = await getImageStatus(img.path)
 
@@ -205,6 +206,7 @@ async function compressImgs(
       img.height = height
       img.dimensions = dimensions
       img.depth = depth
+      img.channels = channels
       img.hasAlpha = hasAlpha
 
       return img
@@ -297,6 +299,7 @@ async function compressImgs(
         height,
         dimensions,
         depth,
+        channels,
         hasAlpha,
       } = await getImageStatus(img.path)
 
@@ -310,6 +313,7 @@ async function compressImgs(
         height,
         dimensions,
         depth,
+        channels,
         hasAlpha,
         saved,
         savedPercent,
@@ -384,6 +388,7 @@ async function getImageStatus(inputPath) {
     height: parseInt(height),
     dimensions: `${width}x${height}`,
     depth: parseInt(depth),
+    channels: channels.toLowerCase(),
     hasAlpha: channels.toLowerCase().includes('a'),
   }
 }
@@ -400,6 +405,9 @@ async function convertToDDS_texconv(
   flags += ` --separate-alpha` // fix black transparancy
   flags += ' --file-type dds'
   flags += ' --mip-levels 4'
+
+  // gamma correction
+  if (img.channels.includes('srgb')) flags += ' -srgb'
 
   if (!img.filename.includes(img.id))
     flags += ` --suffix "${img.id}"`
