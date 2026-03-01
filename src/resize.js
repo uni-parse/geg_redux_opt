@@ -43,12 +43,20 @@ function getResizeDimensions(
   if (newDimension < minResizeDimension)
     newDimension = minResizeDimension
 
+  let newWidth, newHeight
+
   const aspectRatio = width / height
   const isLandscape = width >= height
 
-  const smallDimension = newDimension / aspectRatio
-  const newWidth = isLandscape ? newDimension : smallDimension
-  const newHeight = !isLandscape ? newDimension : smallDimension
+  if (isLandscape) {
+    newWidth = newDimension
+    newHeight = newDimension / aspectRatio
+  }
+  // Portrait
+  else {
+    newWidth = newDimension * aspectRatio
+    newHeight = newDimension
+  }
 
   return {
     canResize: true,
