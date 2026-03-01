@@ -32,7 +32,7 @@
     git clone "https://github.com/uni-parse/geg_redux_opt"
     cd geg_redux_opt
   - double click on `/Run_GEG_Redux_Opt.bat` and follow instructins
-  - wait (depend on your hardware it may took 10~50min)
+  - wait 10~40min based on your CPU/GPU
   - backup will be generated `/_geg_redux_opt/_backup/` 
     - you can remove it at the end
     - ⚠️ but keep it if you want to test different resize configs
@@ -48,7 +48,7 @@
   - open console by the key `~`
   - enter the command `enter_dev_mode` and press Enter
   - enter the command `shop` and press Enter
-  - wait (it will take 5~20min based on your hardware)
+  - wait 5~20min based on your CPU
   - fresh cache will be generated `/Temp` & `/RenderedItems`
   - from now on, shops loading time will be fast
 
@@ -72,6 +72,7 @@
     - by [texconv.exe](https://github.com/microsoft/DirectXTex/wiki/Texconv) and fallback to [magick.exe](https://imagemagick.org/)
   - resize textures by percentage, and respect min/max Dimension
   - rename back to org filename (compatibility hack)
+  - total size saved (org & mod): 6.6gb => ~890mb
 
 ## 3D Mesh Processing Pipeline
   - mesh files: .x .mesh .act .actx .act.# .lod#
@@ -91,3 +92,4 @@
       ```bash
        1.000000 =>  1.0
       -0.123456 => -0.1235
+  - total size saved (org & mod): 5gb => ~3.3gb
