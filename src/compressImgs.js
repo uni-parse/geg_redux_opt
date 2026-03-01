@@ -397,6 +397,7 @@ async function convertToDDS_texconv(
 ) {
   let flags = ''
   flags += ' --single-proc' // disable multi thread
+  flags += ` --separate-alpha` // fix black transparancy
   flags += ' --file-type dds'
   flags += ' --mip-levels 4'
 
