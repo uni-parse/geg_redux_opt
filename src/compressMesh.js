@@ -134,9 +134,9 @@ async function compressMesh(
           } catch (error) {
             if (SHOW_MORE_LOGS)
               console.warn(
-                `\n  Warn: unsupported 0303txt mesh file: "${filename}"\n` +
+                `\n  Warn: failed to convert to binary 0303txt mesh file: "${filename}"\n` +
                   `  "${p}"\n` +
-                  `  fallback to opt text`
+                  `  fallback to text optimization ...`
               )
 
             isSupportedTxt0303 = false
