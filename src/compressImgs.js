@@ -290,52 +290,15 @@ async function compressImgs(
       if (img.isRenamed && img.actualExt !== '.dds')
         await fs.unlink(img.path) // old renamedPath
 
+      const { size } = await fs.stat(outPath)
+
       // update
       img.isOpted = true
+      img.opt = { size }
       img.setPath(outPath)
 
       return img
     }
-  )
-
-  // Update opted imgs Status
-  await parallelProccess(
-    'Update opted status',
-    optedImgs,
-    IO_LIMIT,
-    async img => {
-      const {
-        size,
-        width,
-        height,
-        dimensions,
-        depth,
-        channels,
-        hasAlpha,
-      } = await getImageStatus(img.path)
-
-      const saved = img.size - size
-      const savedPercent = Math.round((saved / img.size) * 100)
-
-      // update
-      img.opt = {
-        size,
-        width,
-        height,
-        dimensions,
-        depth,
-        channels,
-        hasAlpha,
-        saved,
-        savedPercent,
-      }
-
-      return img
-    },
-    (error, img) =>
-      console.error(
-        `\n\n❌ Failed to get img status "${img.relPath}": ${error?.message}"`
-      )
   )
 
   // Compatibility hack
