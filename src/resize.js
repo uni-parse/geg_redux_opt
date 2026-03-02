@@ -2,7 +2,8 @@ const path = require('node:path')
 
 // add other textures paths you don't want to resize
 const exluded = [
-  'MEDIA/SPLASHES/startgame.tga', // Main Menu
+  // Main Menu
+  'Mods/GEG Redux/Data/MEDIA/SPLASHES/startgame.tga',
 ]
 
 // need tests to get the right resizes
