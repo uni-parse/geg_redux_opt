@@ -248,6 +248,9 @@ set "args=!args! --canMigrate !canMigrate!"
 
 :: Prompt for cores -------------------------------------------
 set /a default_threads=%NUMBER_OF_PROCESSORS% - 1
+if %default_threads% lss 1 set default_threads=1
+
+cls
 :ask_threads
 echo How much CPU threads do you want to assign?
 echo your total CPU threads are: %NUMBER_OF_PROCESSORS%
