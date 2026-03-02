@@ -1,6 +1,7 @@
 {
   "author": {
-    "name": "UniParse"
+    "name": "UniParse",
+    "url": "https://github.com/uni-parse/geg_redux_opt"
   },
   "name": "geg_redux_opt",
   "version": "2.1.1",
