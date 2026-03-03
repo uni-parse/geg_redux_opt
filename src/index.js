@@ -4,6 +4,7 @@ const process = require('node:process')
 const os = require('node:os')
 const { compressImgs } = require('./compressImgs')
 const { compressMesh } = require('./compressMesh')
+const { compressAudio } = require('./compressAudio')
 const {
   unpackAZP,
   repackAZP,
