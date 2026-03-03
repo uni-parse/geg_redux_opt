@@ -74,6 +74,9 @@
     - by [texconv.exe](https://github.com/microsoft/DirectXTex/wiki/Texconv) and fallback to [magick.exe](https://imagemagick.org/)
   - resize textures by percentage, and respect min/max Dimension
   - rename back to org filename (compatibility hack)
+  - node: do not panic if png/jpg => dds get **Bigger** on disk
+    - input: compressed on disk, but slow to load, and use more Memory ⭕
+    - output: optimized DDS, use more disk, but load fast, and use less Memory ✅
   - total size saved (org & mod): 6.6gb => ~890mb
 
 ## Audio Processing Pipeline
@@ -87,6 +90,9 @@
   - limit max simple-rate
   - limit max bit-depth
   - force mono channel (optional)
+  - node: do not panic if ogg files get **Bigger** on disk
+    - input: compressed on disk, but slow to load, and use more Memory ⭕
+    - output: decompressed, use more disk, but load fast, and use less Memory ✅
   - total size saved (org & mod): 453mb => ~197mb
 
 ## 3D Mesh Processing Pipeline
