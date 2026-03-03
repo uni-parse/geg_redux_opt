@@ -14,6 +14,11 @@ set "resizePercent="
 set "minResizeDimension="
 set "maxResizeDimension="
 
+set "canOptAudio="
+set "maxSampleRate="
+set "maxBitDepth="
+set "canForceMonoChannel="
+
 set "canOptMesh="
 set "maxMeshFloatDecimals="
 
@@ -88,7 +93,7 @@ if errorlevel 1 set canOptTextures=true
 if errorlevel 2 set canOptTextures=false
 set "args=!args! --canOptTextures !canOptTextures!"
 
-if errorlevel 2 goto :ask_optMesh
+if errorlevel 2 goto :ask_optAudio
 
 :: Prompt for resize percent ----------------------------------
 set default_resizePercent=80
@@ -166,8 +171,86 @@ if "!minResizeDimension!"=="" (
 )
 set "args=!args! --minResizeDimension !minResizeDimension!"
 
+:: Optimize audio ---------------------------------------------
+:ask_optAudio
+cls
+echo Do you want to Optimize audio files ?
+echo.
+echo \Mods\GEG Redux\Data\music
+echo \Mods\GEG Redux\Data\SOUNDS
+echo \Data\Music
+echo \Data\Sounds
+echo.
+choice /c yn /n /m "[Y/N]: "
+if errorlevel 1 set canOptAudio=true
+if errorlevel 2 set canOptAudio=false
+set "args=!args! --canOptAudio !canOptAudio!"
+
+if errorlevel 2 goto :ask_canOptMesh
+
+:: Prompt for max sample rate ---------------------------------
+set default_maxSampleRate=13000
+cls
+:ask_maxSampleRate
+echo Enter max sample-rate of audio files
+echo so the output cannot be big than that
+echo.
+echo the lower the better for memory
+echo but under %default_maxSampleRate%Hz make audio bad "shhhhh"
+echo.
+echo or press Enter to default to: %default_maxSampleRate%Hz
+set /p maxSampleRate="[8000~48000]: "
+if "!maxSampleRate!"=="" (
+  set maxSampleRate=%default_maxSampleRate%
+) else (
+  echo !maxSampleRate!|findstr /r "^[0-9][0-9]*$" >nul || (
+    cls
+    echo Invalid input "!maxSampleRate!". Must be a number.
+    echo.
+    goto :ask_maxSampleRate
+  )
+  if !maxSampleRate! lss 1 set maxSampleRate=8000
+  if !maxSampleRate! gtr 1 set maxSampleRate=48000
+)
+set "args=!args! --maxSampleRate !maxSampleRate!"
+
+:: Prompt for max bit depth -----------------------------------
+cls
+echo Choice max bit-depth of audio files
+echo so the output cannot be big than that
+echo.
+echo [A] 8-bit
+echo [B] 16-bit
+echo [C] 24-bit
+echo [D] 32-bit
+echo.
+echo the lower the better for memory
+echo but reducing to 8-bit make audio bad "shhhhh"
+echo.
+echo recommanded: [B] 16-bit
+choice /c abcd /n /m "[A|B|C|D]: "
+if errorlevel 1 set maxBitDepth=8
+if errorlevel 2 set maxBitDepth=16
+if errorlevel 3 set maxBitDepth=24
+if errorlevel 4 set maxBitDepth=32
+set "args=!args! --maxBitDepth !maxBitDepth!"
+
+:: Prompt for mono channel ------------------------------------
+cls
+echo Do you want to force mono-channel of audio
+echo.
+echo some audio files have 2 channels: left and right
+echo.
+echo that will save 50%% memory
+echo but you will lose the feeling of 3d audio
+echo.
+choice /c yn /n /m "[Y/N]: "
+if errorlevel 1 set canForceMonoChannel=true
+if errorlevel 2 set canForceMonoChannel=false
+set "args=!args! --canForceMonoChannel !canForceMonoChannel!"
+
 :: Optimize 3d Mesh -------------------------------------------
-:ask_optMesh
+:ask_canOptMesh
 cls
 echo Do you want to Optimize 3d Mesh files ?
 echo.
@@ -314,6 +397,19 @@ if %canOptTextures%==true (
   echo   \Data\HardLife_En.zip\BMP             [no resize]
   echo   \Data\HardLife_En.zip\MEDIA
   echo   \Data\HardLife_En.zip\HARDLIFE\BMP
+  echo.
+)
+
+if %canOptAudio%==true (
+  echo Optimize Audio ----------------------
+  echo Max Sample-Rate:      !maxSampleRate!Hz
+  echo Max Bit-Depth:        !maxBitDepth!-bit
+  echo Force mono-channel:   !canForceMonoChannel!
+  echo Target Directories:
+  echo   \Mods\GEG Redux\Data\music
+  echo   \Mods\GEG Redux\Data\SOUNDS
+  echo   \Data\Music
+  echo   \Data\Sounds
   echo.
 )
 
