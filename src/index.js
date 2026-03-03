@@ -59,12 +59,19 @@ async function main(baseDirInput, options = {}) {
   const {
     threads = Math.max(1, os.cpus().length - 1),
     canMigrate,
-    canOptMesh,
-    canOptTextures,
     canBackupCache,
+    // textures
+    canOptTextures,
     resizePercent,
     minResizeDimension,
     maxResizeDimension,
+    // audio
+    canOptAudio,
+    maxSampleRate,
+    maxBitDepth,
+    canForceMonoChannel,
+    // 3d mesh
+    canOptMesh,
     maxMeshFloatDecimals,
   } = options
 
@@ -73,10 +80,6 @@ async function main(baseDirInput, options = {}) {
 
   try {
     const baseDir = await validateBaseDir(baseDirInput)
-
-    // console.log('baseDir =', baseDir)
-    // console.log('options =', JSON.stringify(options, null, 2))
-
     const gegRedux0ptDir = path.resolve(
       baseDir,
       '_geg_redux_opt'
@@ -135,8 +138,18 @@ async function main(baseDirInput, options = {}) {
         dest,
         maxMeshFloatDecimals
       )
+    const optAudio = (src, dest) =>
+      compressAudio(
+        threads,
+        IO_LIMIT,
+        src,
+        dest,
+        maxSampleRate,
+        maxBitDepth,
+        canForceMonoChannel
+      )
 
-    const results = { textures: [], mesh: [] }
+    const results = { textures: [], audio: [], mesh: [] }
 
     // opt textures -------------------------------------------
     if (canOptTextures)
@@ -150,6 +163,15 @@ async function main(baseDirInput, options = {}) {
           'Mods/GEG Redux/Data/BMP',
           optTexturesWithoutResize
         )
+      )
+
+    // opt audio ----------------------------------------------
+    if (canOptAudio)
+      results.audio.push(
+        await opt('Mods/GEG Redux/Data/music', optAudio),
+        await opt('Mods/GEG Redux/Data/SOUNDS', optAudio),
+        await opt('Data/Music', optAudio),
+        await opt('Data/Sounds', optAudio)
       )
 
     // opt 3d mesh --------------------------------------------
@@ -199,12 +221,18 @@ async function main(baseDirInput, options = {}) {
     }
 
     // show summary -------------------------------------------
-    const canShowSummary = canOptTextures || canOptMesh
+    const canShowSummary =
+      canOptTextures || canOptAudio || canOptMesh
     if (canShowSummary) console.log(`\n${'═'.repeat(60)}`)
     if (canOptTextures && results.textures.length > 0)
       showSummary(
         'Final Textures Optimization Summary',
         results.textures
+      )
+    if (canOptAudio && results.audio.length > 0)
+      showSummary(
+        'Final Audio Optimization Summary',
+        results.audio
       )
     if (canOptMesh && results.mesh.length > 0)
       showSummary(
