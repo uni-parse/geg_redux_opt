@@ -46,7 +46,8 @@ async function compressMesh(
   }
 
   console.log(
-    `\n📊 Found ${allPaths.length} total files:\n` +
+    `\n📊 Opting 3D Mesh files: "${baseSrcDir}"\n` +
+      `   Total files: ${allPaths.length}\n` +
       `   3d Mesh files: ${meshPaths.length}\n` +
       `   Config files: ${configPaths.length}\n` +
       `   Other files: ${otherPaths.length}` +
@@ -174,6 +175,7 @@ async function compressMesh(
   console.log(
     `\n${'═'.repeat(60)}\n` +
       `  3d Mesh optimization Summary\n` +
+      `  "${baseSrcDir}"\n` +
       `📊 Total Size: ${sizeToStr(orgSize)} → ${sizeToStr(
         optSize
       )}\n` +

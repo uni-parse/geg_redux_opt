@@ -69,7 +69,8 @@ async function compressImgs(
   }
 
   console.log(
-    `\n📊 Found ${allPaths.length} total files:\n` +
+    `\n📊 Opting Textures: "${baseSrcDir}"\n` +
+      `   Total files: ${allPaths.length}\n` +
       `   📷 Textures: ${imgPaths.length}\n` +
       `   📄 Other files: ${otherPaths.length}` +
       ` [${[...otherExtentions].join(' ')}]\n`
@@ -335,7 +336,8 @@ async function compressImgs(
 
   console.log(
     `\n${'═'.repeat(60)}\n` +
-      `⚡ Optimized: ${optedImgs.length} / ${imgs.length} textures\n` +
+      `⚡ Textures optimization Summary\n` +
+      `  "${baseSrcDir}"\n` +
       `📊 Total Size: ${sizeToStr(orgSize)} → ${sizeToStr(
         optSize
       )}\n` +
