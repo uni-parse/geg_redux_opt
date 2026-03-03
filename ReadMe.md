@@ -87,8 +87,8 @@
     - `/Mods/GEG Redux/Data/SOUNDS`
     - `/Data/Music`
     - `/Data/Sounds`
-  - limit max sample-rate
-  - limit max bit-depth
+  - limit max sample-rate (ex 13000Hz)
+  - limit max bit-depth (ex 16-bit)
   - force mono channel (optional)
   - note: do not panic if ogg files get **Bigger** on disk
     - input: compressed on disk, but slow to load, and use more Memory ⭕
