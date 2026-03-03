@@ -8,6 +8,8 @@ module.exports = {
   magickConv,
   texConv,
   meshConv,
+  soxInfo,
+  sox,
   unpackZip,
   updateZip,
   packZip,
@@ -33,6 +35,12 @@ const MESHCONVERT_EXE_PATH = path.join(
   TOOLS_DIR,
   'Microsoft DirectX SDK (June 2010)',
   'MeshConvert.exe'
+)
+
+const SOX_EXE_PATH = path.join(
+  TOOLS_DIR,
+  'SoX - Sound eXchange 14.4.2',
+  'sox.exe'
 )
 
 const ZIP7_EXE_PATH = path.join(
@@ -138,6 +146,53 @@ async function meshConv(inputPath, flags, outPath) {
     throw new Error(output)
 
   return output
+}
+
+async function soxInfo(inputPath) {
+  const command = flag =>
+    `"${SOX_EXE_PATH}" --info ${flag} "${inputPath}"`
+
+  const sampleRate = await execAsync(command('-r'))
+  const bitDepth = await execAsync(command('-b'))
+  const channels = await execAsync(command('-c'))
+
+  return {
+    sampleRate: parseInt(sampleRate),
+    bitDepth: parseInt(bitDepth),
+    channels: parseInt(channels),
+  }
+}
+
+async function sox(inputPath, options = {}) {
+  const {
+    outPath,
+    sampleRate,
+    bitDepth,
+    channels,
+    multiThreads,
+    flags,
+  } = options
+
+  let command = `"${SOX_EXE_PATH}"`
+  command += ` "${inputPath}"`
+
+  if (sampleRate) command += ` --rate ${sampleRate}`
+  if (bitDepth) command += ` --bits ${bitDepth}`
+  if (channels) command += ` --channels ${channels}`
+  if (typeof multiThreads === 'boolean')
+    command += multiThreads
+      ? ' --multi-threaded'
+      : ' --single-threaded'
+  if (flags) command += ` ${flags}`
+
+  if (outPath) {
+    const parentDir = path.dirname(outPath)
+    await fs.mkdir(parentDir, { recursive: true })
+
+    command += ` "${outPath}"`
+  }
+
+  return await execAsync(command)
 }
 
 async function unpackZip(
