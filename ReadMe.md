@@ -5,7 +5,8 @@
   - Memory leak crash
     - The Engine run on **32-bit** => **limited** to **4GB RAM**, even with [4GB patch](https://ntcore.com/4gb-patch/)
     - The Engine have known **Memory Leaks** issue
-    - The Mod added 6000+ unOptimized OverSized Textures (5.5gb)
+    - The Mod added 6000+ unOptimized OverSized Textures (5.4gb)
+    - The Mod added 674 unOptimized audio files (295mb)
     - Mix the above points and you will get **FREQUENT CRACHES**
   - Loading time
     - The Engine load assets in **Sync mode** => use only 1 core of cpu
@@ -15,9 +16,10 @@
 
 ## The Solutions
   - Reduce Memory Leak
-    - compress textures 5.5gb => ~450mb (based on your config)
+    - compress textures 5.4gb => ~450mb (based on your config)
     - convert all texture to the memory-friendly format .dds (dxt1/dxt5)
     - downScale overSized textures as 2k/4k (based on your config)
+    - optimize audio files 295mb => ~114mb
   - Reduce Loading time
     - opt 3d mesh 4.8gb => ~3.2gb (based on your config)
     - convenrt to binary supported files as 0303txt
@@ -73,6 +75,19 @@
   - resize textures by percentage, and respect min/max Dimension
   - rename back to org filename (compatibility hack)
   - total size saved (org & mod): 6.6gb => ~890mb
+
+## Audio Processing Pipeline
+  - tool used: [SoX - Sound eXchange](https://sourceforge.net/projects/sox/)
+  - audio files: .wav .ogg
+  - target directories:
+    - `/Mods/GEG Redux/Data/music`
+    - `/Mods/GEG Redux/Data/SOUNDS`
+    - `/Data/Music`
+    - `/Data/Sounds`
+  - limit max simple-rate
+  - limit max bit-depth
+  - force mono channel (optional)
+  - total size saved (org & mod): 453mb => ~197mb
 
 ## 3D Mesh Processing Pipeline
   - mesh files: .x .mesh .act .actx .act.# .lod#
