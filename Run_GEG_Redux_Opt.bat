@@ -6,14 +6,16 @@ set "args="
 set "threads="
 set "cache_dir="
 set "base_dir="
-set "canOptMesh="
-set "canOptTextures="
 set "canBackupCache="
 set "canMigrate="
-set "maxMeshFloatDecimals="
+
+set "canOptTextures="
 set "resizePercent="
 set "minResizeDimension="
 set "maxResizeDimension="
+
+set "canOptMesh="
+set "maxMeshFloatDecimals="
 
 :: Cache file location (saved next to the batch script)
 set "cacheFile=%~dp0cache_base_dir.txt"
@@ -95,40 +97,31 @@ cls
 echo Enter Percentage %% to Resize Textures Dimension
 echo example resize 1024x512px by 80%% to be 819x410px
 echo.
+echo if you do not want to resize, enter: 100
+echo.
 echo or press Enter to default to: %default_resizePercent%
 set /p resizePercent="[1~100]: "
 if "!resizePercent!"=="" (
   set resizePercent=%default_resizePercent%
-)
+) else (
+  :: Remove % symbol if present
+  set "resizePercent=!resizePercent:%%=!"
 
-:: Remove % symbol if present
-set "resizePercent=!resizePercent:%%=!"
-
-echo !resizePercent!|findstr /r "^[0-9][0-9]*$" >nul || (
-  cls
-  echo Invalid input "!resizePercent!". Must be a number.
-  echo.
-  goto :ask_resizePercent
-)
-
-:: Check range 1~100
-if !resizePercent! lss 1 (
-  cls
-  echo Error: Percentage cannot be less than 1.
-  echo.
-  goto :ask_resizePercent
-)
-if !resizePercent! gtr 100 (
-  cls
-  echo Error: Percentage cannot exceed 100.
-  echo.
-  goto :ask_resizePercent
+  echo !resizePercent!|findstr /r "^[0-9][0-9]*$" >nul || (
+    cls
+    echo Invalid input "!resizePercent!". Must be a number.
+    echo.
+    goto :ask_resizePercent
+  )
+  if !resizePercent! lss 1 set resizePercent=1
+  if !resizePercent! gtr 100 set resizePercent=100
 )
 set "args=!args! --resizePercent !resizePercent!"
 
 :: Prompt for max resize dimension ----------------------------
 set default_maxResizeDimension=512
 cls
+:ask_maxResizeDimension
 echo Enter Max Texture Dimension can be Resized to
 echo so the output cannot be big than that
 echo and trim all over-sized textures
@@ -137,12 +130,22 @@ echo or press Enter to default to: %default_maxResizeDimension%px
 set /p maxResizeDimension="[1~4096]: "
 if "!maxResizeDimension!"=="" (
   set maxResizeDimension=%default_maxResizeDimension%
+) else (
+  echo !maxResizeDimension!|findstr /r "^[0-9][0-9]*$" >nul || (
+    cls
+    echo Invalid input "!maxResizeDimension!". Must be a number.
+    echo.
+    goto :ask_maxResizeDimension
+  )
+  if !maxResizeDimension! lss 1 set maxResizeDimension=1
+  if !maxResizeDimension! gtr 4096 set maxResizeDimension=4096
 )
 set "args=!args! --maxResizeDimension !maxResizeDimension!"
 
 :: Prompt for min resize dimension ----------------------------
 set default_minResizeDimension=64
 cls
+:ask_minResizeDimension
 echo Enter Min Texture Dimension can be Resized to
 echo so the output cannot be small than that
 echo and skip resizing tiny textures
@@ -151,6 +154,15 @@ echo or press Enter to default to: %default_minResizeDimension%px
 set /p minResizeDimension="[1~4096]: "
 if "!minResizeDimension!"=="" (
   set minResizeDimension=%default_minResizeDimension%
+) else (
+  echo !minResizeDimension!|findstr /r "^[0-9][0-9]*$" >nul || (
+    cls
+    echo Invalid input "!minResizeDimension!". Must be a number.
+    echo.
+    goto :ask_minResizeDimension
+  )
+  if !minResizeDimension! lss 1 set minResizeDimension=1
+  if !minResizeDimension! gtr 4096 set minResizeDimension=4096
 )
 set "args=!args! --minResizeDimension !minResizeDimension!"
 
@@ -190,7 +202,7 @@ echo example reducing decimals form 6 to 4:
 echo    0.123456 opted to  0.1235
 echo   -1.000000 opted to -1.0
 echo.
-echo recommanded to reduce to: %default_maxMeshFloatDecimals%
+echo recommanded: %default_maxMeshFloatDecimals%
 choice /c 123456 /n /m "[1~6]: "
 if errorlevel 1 set maxMeshFloatDecimals=1
 if errorlevel 2 set maxMeshFloatDecimals=2
@@ -260,7 +272,6 @@ echo But using all may cause the system to become unresponsive
 echo.
 echo or press Enter to default to: %default_threads%
 set /p threads="[1-%NUMBER_OF_PROCESSORS%]: "
-
 if "!threads!"=="" (
   set threads=!default_threads!
 ) else (
@@ -270,13 +281,11 @@ if "!threads!"=="" (
     echo.
     goto :ask_threads
   )
+  if !threads! lss 1 set threads=1
+  if !threads! gtr %NUMBER_OF_PROCESSORS% (
+    set threads=%NUMBER_OF_PROCESSORS%
+  )
 )
-
-if !threads! lss 1 set threads=1
-if !threads! gtr %NUMBER_OF_PROCESSORS% (
-  set threads=%NUMBER_OF_PROCESSORS%
-)
-
 set "args=!args! --threads !threads!"
 
 :: summary ----------------------------------------------------
