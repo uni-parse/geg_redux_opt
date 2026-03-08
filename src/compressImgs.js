@@ -436,15 +436,22 @@ async function convertToDDS_magick(
 }
 
 async function checkTransparancy(img) {
-  if (!img.hasAlpha) return 0
+  const getTransparancyObj = transparancy => ({
+    isOpaque: transparancy === 0,
+    isBinaryTransparancy: transparancy === 1,
+    isSmoothTransparancy: transparancy === 2,
+    isFullTransparancy: transparancy === 3,
+  })
+
+  if (!img.hasAlpha) return getTransparancyObj(0)
 
   const threads = 1 // disable multi thread
   const verbose = await magickVerbose(img.path, threads)
-  if (!verbose) return 2 // fallback
+  if (!verbose) return getTransparancyObj(2) // fallback
 
   // Check alpha channel depth
   const depthMatch = verbose.match(/Alpha:\s+(\d+)-bit/)
-  if (!depthMatch) return 0 // No alpha channel
+  if (!depthMatch) return getTransparancyObj(0) // No alpha channel
 
   const alphaDepth = parseInt(depthMatch[1])
 
@@ -458,16 +465,17 @@ async function checkTransparancy(img) {
     const max = parseFloat(minMaxMatch[2])
 
     // Opaque, no transparancy
-    if (min === 1.0) return 0
+    if (min === 1.0) return getTransparancyObj(0)
 
     // Invisible, fully transparant
-    if (max === 0.0) return 1
+    if (max === 0.0) return getTransparancyObj(3)
 
     // Binary transparency
-    if (alphaDepth === 1 && min === 0.0 && max === 1.0) return 1
+    if (alphaDepth === 1 && min === 0.0 && max === 1.0)
+      return getTransparancyObj(1)
   }
 
-  return 2 // Smooth transparency
+  return getTransparancyObj(2) // Smooth transparency
 }
 
 async function detectImgFormat(inputPath) {
