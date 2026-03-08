@@ -452,7 +452,20 @@ async function patchZip(
         targetDir
       )}"`
     )
-    await updateZip(zipTempPath, unpackOptDir, `-mmt${threads}`)
+
+    const targetDirRoot = path
+      .normalize(targetDir)
+      .split(path.sep)[0]
+
+    const unpackOptRootDir = path.join(
+      baseUnpackOptDir,
+      targetDirRoot
+    )
+    await updateZip(
+      zipTempPath,
+      unpackOptRootDir,
+      `-mmt${threads}`
+    )
 
     return result
   }
