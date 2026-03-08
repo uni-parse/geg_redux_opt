@@ -94,6 +94,7 @@ async function main(baseDirInput, options = {}) {
 
     const repackZip = (relPath, callback) =>
       patchZip(
+        threads,
         relPath,
         baseDir,
         baseBackupDir,
@@ -383,6 +384,7 @@ async function patchAzp(srcDir, outDir, callback) {
 }
 
 async function patchZip(
+  threads,
   zipRelPath,
   baseDir,
   baseBackupDir,
