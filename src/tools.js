@@ -223,7 +223,7 @@ async function unpackZip(
 
 async function updateZip(zipPath, updatedPath, flags) {
   let command = `"${ZIP7_EXE_PATH}"`
-  command += `  u`
+  command += ` u`
   command += ` "${zipPath}"`
   command += ` "${updatedPath}"` // file or dir
   command += ` -y`
