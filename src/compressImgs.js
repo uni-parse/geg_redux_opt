@@ -26,6 +26,7 @@ const {
   magickIdentify,
   magickVerbose,
   magickConv,
+  magickCreateTransparantDDS,
   texConv,
 } = require('./tools')
 const { getResizeDimensions } = require('./resize')
@@ -219,7 +220,7 @@ async function compressImgs(
   )
 
   // Opt & Convert to .dds
-  const optedImgs = await parallelProccess(
+  await parallelProccess(
     'Opt & Convert to .DDS',
     imgs,
     CORES_LIMIT,
@@ -234,10 +235,12 @@ async function compressImgs(
       await fs.mkdir(parentdir, { recursive: true })
 
       try {
-        const transparancy = await checkTransparancy(img)
-        const isOpaque = transparancy === 0
-        const isBinaryTransparancy = transparancy === 1
-        const isSmoothTransparancy = transparancy === 2
+        const {
+          isOpaque,
+          isBinaryTransparancy,
+          isSmoothTransparancy,
+          isFullTransparancy,
+        } = await checkTransparancy(img)
 
         const texConvToDDS = compression =>
           convertToDDS_texconv(
@@ -257,22 +260,38 @@ async function compressImgs(
             maxResizeDimension,
             compression
           )
-
-        try {
-          if (isOpaque || isBinaryTransparancy)
-            await texConvToDDS('dxt1')
-          else if (isSmoothTransparancy)
-            await texConvToDDS('dxt5')
-        } catch (error) {
-          if (SHOW_MORE_LOGS)
-            console.warn(
-              `\n  Warn: texconv.exe failed, "${img.relPath}"\n` +
-                `  fallback to magick.exe ...`
+        const createTransparantDDS = async () => {
+          const { canResize, newWidth, newHeight } =
+            getResizeDimensions(
+              img,
+              resizePercent,
+              minResizeDimension,
+              maxResizeDimension
             )
-
-          // magick.exe can black/scuff transparancy on dxt1
-          await magickConvToDDS(isOpaque ? 'dxt1' : 'dxt5')
+          await magickCreateTransparantDDS(
+            outPath,
+            canResize ? newWidth : img.width,
+            canResize ? newHeight : img.height
+          )
         }
+
+        if (isFullTransparancy) await createTransparantDDS()
+        else
+          try {
+            if (isOpaque || isBinaryTransparancy)
+              await texConvToDDS('dxt1')
+            else if (isSmoothTransparancy)
+              await texConvToDDS('dxt5')
+          } catch (error) {
+            if (SHOW_MORE_LOGS)
+              console.warn(
+                `\n  Warn: texconv.exe failed, "${img.relPath}"\n` +
+                  `  fallback to magick.exe ...`
+              )
+
+            // magick.exe can black/scuff transparancy on dxt1
+            await magickConvToDDS(isOpaque ? 'dxt1' : 'dxt5')
+          }
       } catch (error) {
         if (SHOW_MORE_LOGS)
           console.warn(
