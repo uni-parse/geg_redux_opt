@@ -6,6 +6,7 @@ module.exports = {
   magickIdentify,
   magickVerbose,
   magickConv,
+  magickCreateTransparantDDS,
   texConv,
   meshConv,
   soxInfo,
@@ -103,6 +104,24 @@ async function magickConv(inputPath, flags, outPath) {
 
     command += ` "${outPath}"`
   }
+
+  return await execAsync(command)
+}
+
+async function magickCreateTransparantDDS(
+  outPath,
+  width,
+  height
+) {
+  let command = `"${MAGICK_EXE_PATH}"`
+  command += ` -size "${width}x${height}>"`
+  command += ` xc:none`
+  command += ` -define dds:compression=dxt5`
+
+  const parentDir = path.dirname(outPath)
+  await fs.mkdir(parentDir, { recursive: true })
+
+  command += ` "${outPath}"`
 
   return await execAsync(command)
 }
