@@ -56,23 +56,27 @@ async function compressImgs(
   maxResizeDimension
 ) {
   const allPaths = await getAllFilePaths(baseSrcDir)
-  const imgPaths = []
+  const texturesPaths = []
   const otherPaths = []
+  const texturesExtentions = new Set()
   const otherExtentions = new Set()
 
   for (const p of allPaths) {
     const ext = path.extname(p).toLowerCase()
-    if (EXTENSIONS.includes(ext)) imgPaths.push(p)
-    else {
+    if (EXTENSIONS.includes(ext)) {
+      texturesPaths.push(p)
+      texturesExtentions.add(ext)
+    } else {
       otherPaths.push(p)
-      otherExtentions.add(path.extname(p).toLowerCase())
+      otherExtentions.add(ext)
     }
   }
 
   console.log(
     `\n📊 Opting Textures: "${baseSrcDir}"\n` +
       `   Total files: ${allPaths.length}\n` +
-      `   📷 Textures: ${imgPaths.length}\n` +
+      `   📷 Textures: ${texturesPaths.length}\n` +
+      ` [${[...texturesExtentions].join(' ')}]\n` +
       `   📄 Other files: ${otherPaths.length}` +
       ` [${[...otherExtentions].join(' ')}]\n`
   )
@@ -90,7 +94,7 @@ async function compressImgs(
   )
 
   // init imgs objects details
-  const imgs = imgPaths.map(p => {
+  const imgs = texturesPaths.map(p => {
     const ext = path.extname(p)
     const basename = path.basename(p, ext)
     const filename = path.basename(p)
@@ -129,10 +133,10 @@ async function compressImgs(
     }
   })
 
-  // Flag misFormated imgs
-  // Flag Corrupted .dds imgs
+  // Flag misFormated textures
+  // Flag Corrupted .dds textures
   const misFormat_or_curroptDDS_imgs = await parallelProccess(
-    'Flag misFormat imgs / Corrupt .dds imgs',
+    'Flag misFormated textures or Corrupted DDS textures',
     imgs,
     IO_LIMIT,
     async img => {
@@ -152,10 +156,10 @@ async function compressImgs(
     }
   )
 
-  // Rename misFormated imgs
-  // Repair corrupt .dds imgs
+  // Rename misFormated textures
+  // Repair corrupt .dds textures
   await parallelProccess(
-    'Fix misFormat imgs / Corrupt .dds imgs',
+    'Fix misFormated textures or Corrupted DDS textures',
     misFormat_or_curroptDDS_imgs,
     IO_LIMIT,
     async img => {
@@ -186,14 +190,14 @@ async function compressImgs(
     }
   )
 
-  // Collect img status
+  // Collect img metadata
   await parallelProccess(
-    `Collect imgs status`,
+    `Collect textures metadata`,
     imgs,
     IO_LIMIT,
     async img => {
       const { size, width, height, depth, channels, hasAlpha } =
-        await getImageStatus(img.path)
+        await getTextureMetadata(img.path)
 
       // update
       img.size = size
@@ -211,9 +215,9 @@ async function compressImgs(
       )
   )
 
-  // Opt & Convert to .dds
+  // Opt & Convert textures to .dds
   await parallelProccess(
-    'Opt & Convert to .DDS',
+    'Opt & Convert textures to DDS',
     imgs,
     CORES_LIMIT,
     async img => {
@@ -326,7 +330,7 @@ async function compressImgs(
   // Compatibility hack
   // Restore original filename
   await parallelProccess(
-    'Restore org filename (compatibility hack)',
+    'Restore textures org filename (compatibility hack)',
     imgs,
     IO_LIMIT,
     async img => {
@@ -371,7 +375,7 @@ async function compressImgs(
   return { orgSize, optSize, savedSize, savedPercent }
 }
 
-async function getImageStatus(inputPath) {
+async function getTextureMetadata(inputPath) {
   const format = '%B|%w|%h|%[depth]|%[channels]'
   const separator = '|'
 
