@@ -10,7 +10,7 @@ const { soxInfo, sox } = require('./tools')
 
 module.exports = { compressAudio }
 
-const SHOW_MORE_LOGS = true
+const SHOW_MORE_LOGS = false
 
 async function compressAudio(
   CORES_LIMIT,
@@ -33,7 +33,7 @@ async function compressAudio(
     else if (ext === '.ogg') oggPaths.push(p)
     else {
       otherPaths.push(p)
-      otherExtentions.add(path.extname(p).toLowerCase())
+      otherExtentions.add(ext)
     }
   }
 
