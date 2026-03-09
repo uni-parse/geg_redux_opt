@@ -75,7 +75,7 @@ async function compressImgs(
   console.log(
     `\n📊 Opting Textures: "${baseSrcDir}"\n` +
       `   Total files: ${allPaths.length}\n` +
-      `   📷 Textures: ${texturesPaths.length}\n` +
+      `   📷 Textures: ${texturesPaths.length}` +
       ` [${[...texturesExtentions].join(' ')}]\n` +
       `   📄 Other files: ${otherPaths.length}` +
       ` [${[...otherExtentions].join(' ')}]\n`
