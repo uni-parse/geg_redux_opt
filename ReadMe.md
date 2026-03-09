@@ -55,6 +55,7 @@
   - from now on, shops loading time will be fast
 
 ## Texture Processing Pipeline
+  - tools: [texconv.exe](https://github.com/microsoft/DirectXTex/wiki/Texconv) and fallback to [magick.exe](https://imagemagick.org/)
   - textures: .tga .dds .bmp .png .jpg .jpeg .webp
   - target directories:
     - `/Mods/GEG Redux/Data/BMP`          (no resize)
@@ -70,8 +71,12 @@
   - skip/copy unsupported textures as .vtf ...
   - rename misFormated textures (required by magick.exe)
   - repair corrupt .dds headers (required by magick.exe)
-  - convert everything to .dds (compress dxt1/dxt5) 
-    - by [texconv.exe](https://github.com/microsoft/DirectXTex/wiki/Texconv) and fallback to [magick.exe](https://imagemagick.org/)
+  - convert everything to .DDS
+  - compress dxt1/dxt5 based on transparancy:
+    - Opaque (No Transparancy): dxt1
+    - Binary Transparancy: dxt1
+    - Smooth Transparancy: dxt5
+    - Full Transparancy: dxt5 (create new texture with magick.exe)
   - resize textures by percentage, and respect min/max Dimension
   - rename back to org filename (compatibility hack)
   - note: do not panic if png/jpg => dds get **Bigger** on disk
