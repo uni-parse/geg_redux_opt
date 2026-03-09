@@ -23,6 +23,8 @@ async function compressMesh(
   const meshPaths = []
   const configPaths = []
   const otherPaths = []
+  const meshExtentions = new Set()
+  const configExtentions = new Set()
   const otherExtentions = new Set()
 
   for (const p of allPaths) {
@@ -37,19 +39,26 @@ async function compressMesh(
       /\.act\.\d+$/.test(filename) || // endsWith .ACT.#
       /\.lod\d+$/.test(filename) // endsWith .LOD#
 
-    if (isConfig) configPaths.push(p)
-    else if (isMesh) meshPaths.push(p)
-    else {
+    if (isMesh) {
+      meshPaths.push(p)
+      const _ext = isNaN(+ext.slice(1)) ? ext : `act${ext}`
+      meshExtentions.add(_ext)
+    } else if (isConfig) {
+      configPaths.push(p)
+      configExtentions.add(ext)
+    } else {
       otherPaths.push(p)
-      otherExtentions.add(path.extname(p).toLowerCase())
+      otherExtentions.add(ext)
     }
   }
 
   console.log(
     `\n📊 Opting 3D Mesh files: "${baseSrcDir}"\n` +
       `   Total files: ${allPaths.length}\n` +
-      `   3d Mesh files: ${meshPaths.length}\n` +
-      `   Config files: ${configPaths.length}\n` +
+      `   3d Mesh files: ${meshPaths.length}` +
+      ` [${[...meshExtentions].join(' ')}]\n` +
+      `   Config files: ${configPaths.length}` +
+      ` [${[...configExtentions].join(' ')}]\n` +
       `   Other files: ${otherPaths.length}` +
       ` [${[...otherExtentions].join(' ')}]\n`
   )
