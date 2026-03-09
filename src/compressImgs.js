@@ -133,60 +133,41 @@ async function compressImgs(
     }
   })
 
-  // Flag misFormated textures
-  // Flag Corrupted .dds textures
-  const misFormat_or_curroptDDS_imgs = await parallelProccess(
-    'Flag misFormated textures or Corrupted DDS textures',
+  // Rename misFormated textures
+  // Repair Corrupted .dds textures
+  await parallelProccess(
+    'Fix misFormated textures / Corrupted DDS textures',
     imgs,
     IO_LIMIT,
     async img => {
       const actualExt = await detectImgFormat(img.orgPath)
-      const isMisFormated =
-        img.orgExt.toLowerCase() !== actualExt
+      img.actualExt = actualExt
 
+      const isMisFormated =
+        actualExt !== img.orgExt.toLowerCase()
       const isCorruptDDS =
         actualExt === '.dds' && (await detectCurroptDDS(img))
+      const needRepair = isMisFormated || isCorruptDDS
 
-      // update
-      img.isMisFormated = isMisFormated
-      img.actualExt = actualExt
-      img.isCorruptDDS = isCorruptDDS
+      if (needRepair) {
+        const filename = `${img.basename}${img.id}${actualExt}`
+        const outPath = path.join(
+          baseDestDir,
+          img.relDir,
+          filename
+        )
+        await copyFile(img.path, outPath)
 
-      if (isMisFormated || isCorruptDDS) return img
-    }
-  )
+        if (isMisFormated) img.isRenamed = true
 
-  // Rename misFormated textures
-  // Repair corrupt .dds textures
-  await parallelProccess(
-    'Fix misFormated textures or Corrupted DDS textures',
-    misFormat_or_curroptDDS_imgs,
-    IO_LIMIT,
-    async img => {
-      const outPath = path.join(
-        baseDestDir,
-        img.relDir,
-        img.basename + img.id + img.actualExt
-      )
+        if (isCorruptDDS) {
+          await repairCorruptDDS(outPath)
+          img.isRepairedDDS = true
+        }
 
-      await copyFile(img.path, outPath)
-
-      if (img.isMisFormated) {
-        img.isMisFormated = false
-        img.isRenamed = true
+        img.setPath(outPath)
+        return img
       }
-
-      if (img.isCorruptDDS) {
-        await repairCorruptDDS(outPath)
-
-        img.isCorruptDDS = false
-        img.isRepairedDDS = true
-      }
-
-      // update
-      img.setPath(outPath)
-
-      if (img.isRenamed || img.isRepairedDDS) return img
     }
   )
 
