@@ -393,18 +393,23 @@ async function patchZip(
 ) {
   const zipSrcPath = path.resolve(baseDir, zipRelPath)
   const zipBackupPath = path.resolve(baseBackupDir, zipRelPath)
-  const zipTempPath = path.resolve(baseTempDir, zipRelPath)
 
   const isValidZipSrcPath = await checkDir(zipSrcPath)
   const isValidZipBackupPath = await checkDir(zipBackupPath)
   if (!isValidZipSrcPath && !isValidZipBackupPath) return
 
-  // create backup
-  if (!isValidZipBackupPath) {
-    const parentDir = path.dirname(zipBackupPath)
-    await fs.mkdir(parentDir, { recursive: true })
+  const relBackupDir = path.relative(baseDir, baseBackupDir)
+  const relZipBackupPath = path.join(relBackupDir, zipRelPath)
 
-    await fs.rename(zipSrcPath, zipBackupPath)
+  // create/restore backup
+  if (!isValidZipBackupPath) {
+    console.log(`\nbacking up zip ... "${relZipBackupPath}"`)
+    await copyFile(zipSrcPath, zipBackupPath)
+  } else if (!isValidZipSrcPath) {
+    console.log(
+      `\nrestoring zip from backup ... "${zipRelPath}"`
+    )
+    await copyFile(zipBackupPath, zipSrcPath)
   }
 
   // clear old temp (if exist)
@@ -418,9 +423,6 @@ async function patchZip(
   )
   await removeDir(zipTempDir)
 
-  // copy zip to temp
-  await copyFile(zipBackupPath, zipTempPath)
-
   const baseUnpackDir = path.resolve(zipTempDir, '_unpack')
   const baseUnpackOptDir = path.resolve(
     zipTempDir,
@@ -428,12 +430,8 @@ async function patchZip(
   )
 
   const opt = async (targetDir, callback) => {
-    console.log(
-      `\nunpacking zip ... "${path.join(
-        zipRelPath,
-        targetDir
-      )}"`
-    )
+    const targetZipDir = path.join(zipRelPath, targetDir)
+    console.log(`\nunpacking zip ... "${targetZipDir}"`)
     await unpackZip(
       zipBackupPath,
       baseUnpackDir,
@@ -447,24 +445,18 @@ async function patchZip(
     // opt callpack
     const result = await callback(unpackDir, unpackOptDir)
 
-    // update zip
-    console.log(
-      `\nupdating zip ... "${path.join(
-        path.relative(baseDir, zipTempPath),
-        targetDir
-      )}"`
-    )
-
     const targetDirRoot = path
       .normalize(targetDir)
       .split(path.sep)[0]
-
     const unpackOptRootDir = path.join(
       baseUnpackOptDir,
       targetDirRoot
     )
+
+    // update zip
+    console.log(`\nupdating zip ... "${targetZipDir}"`)
     await updateZip(
-      zipTempPath,
+      zipSrcPath,
       unpackOptRootDir,
       `-mmt${threads}`
     )
@@ -474,9 +466,6 @@ async function patchZip(
 
   // opt callbacks
   await callback(opt)
-
-  // save
-  await moveDir(zipTempPath, zipSrcPath)
 
   // delete new temp
   await removeDir(baseUnpackDir)
