@@ -192,21 +192,13 @@ async function compressImgs(
     imgs,
     IO_LIMIT,
     async img => {
-      const {
-        size,
-        width,
-        height,
-        dimensions,
-        depth,
-        channels,
-        hasAlpha,
-      } = await getImageStatus(img.path)
+      const { size, width, height, depth, channels, hasAlpha } =
+        await getImageStatus(img.path)
 
       // update
       img.size = size
       img.width = width
       img.height = height
-      img.dimensions = dimensions
       img.depth = depth
       img.channels = channels
       img.hasAlpha = hasAlpha
@@ -381,7 +373,6 @@ async function getImageStatus(inputPath) {
     size: parseInt(size),
     width: parseInt(width),
     height: parseInt(height),
-    dimensions: `${width}x${height}`,
     depth: parseInt(depth),
     channels: channels.toLowerCase(),
     hasAlpha: channels.toLowerCase().includes('a'),
