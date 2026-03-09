@@ -290,7 +290,9 @@ async function compressImgs(
             `  Warn: magick.exe failed, "${img.relPath}"\n` +
               `  fallback to copy ...`
           )
-        await copyFile(img.path, outPath)
+
+        if (img.path !== outPath)
+          await copyFile(img.path, outPath)
       }
 
       // Remove extra temp renamed textures
