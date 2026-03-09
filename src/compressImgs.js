@@ -265,6 +265,14 @@ async function compressImgs(
             canResize ? newWidth : img.width,
             canResize ? newHeight : img.height
           )
+
+          if (SHOW_MORE_LOGS)
+            console.log(
+              `\ncreated transparent texture: "${path.join(
+                img.relDir,
+                img.orgFilename
+              )}"`
+            )
         }
 
         if (isFullTransparancy) await createTransparantDDS()
