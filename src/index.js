@@ -103,6 +103,7 @@ async function main(baseDirInput, options = {}) {
       )
     const opt = (relDir, callback, isAzp = false) =>
       _opt(
+        threads,
         relDir,
         baseDir,
         baseBackupDir,
@@ -277,6 +278,7 @@ async function validateBaseDir(baseDirInput) {
 }
 
 async function _opt(
+  threads,
   relDir,
   baseDir,
   baseBackupDir,
@@ -300,7 +302,7 @@ async function _opt(
 
   // opt callback
   const result = isAzp
-    ? await patchAzp(backupDir, tempDir, callback)
+    ? await patchAzp(backupDir, tempDir, callback, threads)
     : await callback(backupDir, tempDir)
 
   // save
@@ -312,7 +314,7 @@ async function _opt(
   return result
 }
 
-async function patchAzp(srcDir, outDir, callback) {
+async function patchAzp(srcDir, outDir, callback, threads) {
   const baseUnpackDir = path.join(outDir, '_unpack')
   const baseUnpackOptDir = path.join(outDir, '_unpack_opt')
 
