@@ -177,8 +177,16 @@ async function compressImgs(
     imgs,
     IO_LIMIT,
     async img => {
-      const { size, width, height, depth, channels, hasAlpha } =
-        await getTextureMetadata(img.path)
+      const threads = 1 // disable multi threads
+      const {
+        size,
+        width,
+        height,
+        depth,
+        channels,
+        hasAlpha,
+        transparancy,
+      } = await getTextureMetadata(img.path, threads)
 
       // update
       img.size = size
@@ -187,6 +195,7 @@ async function compressImgs(
       img.depth = depth
       img.channels = channels
       img.hasAlpha = hasAlpha
+      img.transparancy = transparancy
 
       return img
     },
@@ -208,65 +217,57 @@ async function compressImgs(
         img.basename + img.id + '.dds'
       )
 
-      const parentdir = path.dirname(outPath)
-      await fs.mkdir(parentdir, { recursive: true })
+      const { canResize, newWidth, newHeight } =
+        getResizeDimensions(
+          img,
+          resizePercent,
+          minResizeDimension,
+          maxResizeDimension
+        )
+
+      const texConvToDDS = compression =>
+        convertToDDS_texconv(
+          img,
+          outPath,
+          compression,
+          canResize,
+          newWidth,
+          newHeight
+        )
+      const magickConvToDDS = compression =>
+        convertToDDS_magick(
+          img,
+          outPath,
+          compression,
+          canResize,
+          newWidth,
+          newHeight
+        )
+      const createTransparantDDS = async () => {
+        const width = canResize ? newWidth : img.width
+        const height = canResize ? newHeight : img.height
+        await magickCreateTransparantDDS(outPath, width, height)
+
+        if (SHOW_MORE_LOGS)
+          console.log(
+            `\ncreated transparent texture: "${path.join(
+              img.relDir,
+              img.orgFilename
+            )}"`
+          )
+      }
 
       try {
-        const {
-          isOpaque,
-          isBinaryTransparancy,
-          isSmoothTransparancy,
-          isFullTransparancy,
-        } = await checkTransparancy(img)
-
-        const texConvToDDS = compression =>
-          convertToDDS_texconv(
-            img,
-            outPath,
-            resizePercent,
-            minResizeDimension,
-            maxResizeDimension,
-            compression
-          )
-        const magickConvToDDS = compression =>
-          convertToDDS_magick(
-            img,
-            outPath,
-            resizePercent,
-            minResizeDimension,
-            maxResizeDimension,
-            compression
-          )
-        const createTransparantDDS = async () => {
-          const { canResize, newWidth, newHeight } =
-            getResizeDimensions(
-              img,
-              resizePercent,
-              minResizeDimension,
-              maxResizeDimension
-            )
-          await magickCreateTransparantDDS(
-            outPath,
-            canResize ? newWidth : img.width,
-            canResize ? newHeight : img.height
-          )
-
-          if (SHOW_MORE_LOGS)
-            console.log(
-              `\ncreated transparent texture: "${path.join(
-                img.relDir,
-                img.orgFilename
-              )}"`
-            )
-        }
-
-        if (isFullTransparancy) await createTransparantDDS()
+        if (img.transparancy === 'full')
+          await createTransparantDDS()
         else
           try {
-            if (isOpaque || isBinaryTransparancy)
-              await texConvToDDS('dxt1')
-            else if (isSmoothTransparancy)
-              await texConvToDDS('dxt5')
+            const compression =
+              img.transparancy === 'opaque' ||
+              img.transparancy === 'binary'
+                ? 'dxt1'
+                : 'dxt5' // 'smooth'
+            await texConvToDDS(compression)
           } catch (error) {
             if (SHOW_MORE_LOGS)
               console.warn(
@@ -275,7 +276,9 @@ async function compressImgs(
               )
 
             // magick.exe can black/scuff transparancy on dxt1
-            await magickConvToDDS(isOpaque ? 'dxt1' : 'dxt5')
+            const compression =
+              img.transparancy === 'opaque' ? 'dxt1' : 'dxt5'
+            await magickConvToDDS(compression)
           }
       } catch (error) {
         if (SHOW_MORE_LOGS)
@@ -356,31 +359,13 @@ async function compressImgs(
   return { orgSize, optSize, savedSize, savedPercent }
 }
 
-async function getTextureMetadata(inputPath) {
-  const format = '%B|%w|%h|%[depth]|%[channels]'
-  const separator = '|'
-
-  const threads = 1 // disable multi thread
-  const [size, width, height, depth, channels] =
-    await magickIdentify(inputPath, format, separator, threads)
-
-  return {
-    size: parseInt(size),
-    width: parseInt(width),
-    height: parseInt(height),
-    depth: parseInt(depth),
-    channels: channels.toLowerCase(),
-    hasAlpha: channels.toLowerCase().includes('a'),
-  }
-}
-
 async function convertToDDS_texconv(
   img,
   outPath,
-  resizePercent,
-  minResizeDimension,
-  maxResizeDimension,
-  compression
+  compression,
+  canResize,
+  newWidth,
+  newHeight
 ) {
   let flags = ''
   flags += ' --single-proc' // disable multi thread
@@ -395,13 +380,6 @@ async function convertToDDS_texconv(
   if (!img.filename.includes(img.id))
     flags += ` --suffix "${img.id}"`
 
-  const { canResize, newWidth, newHeight } =
-    getResizeDimensions(
-      img,
-      resizePercent,
-      minResizeDimension,
-      maxResizeDimension
-    )
   if (canResize) {
     flags += ` --width ${newWidth}`
     flags += ` --height ${newHeight}`
@@ -414,10 +392,10 @@ async function convertToDDS_texconv(
 async function convertToDDS_magick(
   img,
   outPath,
-  resizePercent,
-  minResizeDimension,
-  maxResizeDimension,
-  compression
+  compression,
+  canResize,
+  newWidth,
+  newHeight
 ) {
   let flags = ''
   flags += ' -limit thread 1' // disable multi thread
@@ -428,35 +406,42 @@ async function convertToDDS_magick(
 
   if (img.depth > 8) flags += ' -depth 8'
 
-  const { canResize, newWidth, newHeight } =
-    getResizeDimensions(
-      img,
-      resizePercent,
-      minResizeDimension,
-      maxResizeDimension
-    )
   if (canResize) flags += ` -resize "${newWidth}x${newHeight}>"`
 
   await magickConv(img.path, flags, outPath)
 }
 
-async function checkTransparancy(img) {
-  const getTransparancyObj = transparancy => ({
-    isOpaque: transparancy === 0,
-    isBinaryTransparancy: transparancy === 1,
-    isSmoothTransparancy: transparancy === 2,
-    isFullTransparancy: transparancy === 3,
-  })
+async function getTextureMetadata(inputPath, threads) {
+  const format = '%B|%w|%h|%[depth]|%[channels]'
+  const separator = '|'
 
-  if (!img.hasAlpha) return getTransparancyObj(0)
+  const [size, width, height, depth, _channels] =
+    await magickIdentify(inputPath, format, separator, threads)
 
-  const threads = 1 // disable multi thread
-  const verbose = await magickVerbose(img.path, threads)
-  if (!verbose) return getTransparancyObj(2) // fallback
+  const channels = _channels.toLowerCase()
+  const hasAlpha = channels.includes('a')
+  const transparancy = hasAlpha
+    ? await checkTransparancy(inputPath, threads)
+    : 'opaque'
+
+  return {
+    size: parseInt(size),
+    width: parseInt(width),
+    height: parseInt(height),
+    depth: parseInt(depth),
+    channels,
+    hasAlpha,
+    transparancy,
+  }
+}
+
+async function checkTransparancy(inputPath, threads) {
+  const verbose = await magickVerbose(inputPath, threads)
+  if (!verbose) return 'smooth' // fallback
 
   // Check alpha channel depth
   const depthMatch = verbose.match(/Alpha:\s+(\d+)-bit/)
-  if (!depthMatch) return getTransparancyObj(0) // No alpha channel
+  if (!depthMatch) return 'opaque'
 
   const alphaDepth = parseInt(depthMatch[1])
 
@@ -470,17 +455,17 @@ async function checkTransparancy(img) {
     const max = parseFloat(minMaxMatch[2])
 
     // Opaque, no transparancy
-    if (min === 1.0) return getTransparancyObj(0)
+    if (min === 1.0) return 'opaque'
 
     // Invisible, fully transparant
-    if (max === 0.0) return getTransparancyObj(3)
+    if (max === 0.0) return 'full'
 
     // Binary transparency
     if (alphaDepth === 1 && min === 0.0 && max === 1.0)
-      return getTransparancyObj(1)
+      return 'binary'
   }
 
-  return getTransparancyObj(2) // Smooth transparency
+  return 'smooth'
 }
 
 async function detectImgFormat(inputPath) {
