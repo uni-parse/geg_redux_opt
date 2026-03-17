@@ -175,7 +175,7 @@ async function compressImgs(
   await parallelProccess(
     `Collect textures metadata`,
     imgs,
-    IO_LIMIT,
+    CORES_LIMIT,
     async img => {
       const threads = 1 // disable multi threads
       const {
@@ -198,11 +198,7 @@ async function compressImgs(
       img.transparancy = transparancy
 
       return img
-    },
-    (error, img) =>
-      console.error(
-        `\n\n❌ Failed to get img status "${img.relPath}: ${error?.message}"`
-      )
+    }
   )
 
   // Opt & Convert textures to .dds
