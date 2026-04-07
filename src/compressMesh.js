@@ -31,9 +31,10 @@ async function compressMesh(
     const ext = path.extname(p).toLowerCase()
     const filename = path.basename(p).toLowerCase()
 
-    const isConfig = ['.inf', '.att', '.descr', '.hi'].includes(
-      ext
-    )
+    /// ⚠️⚠️⚠️ disabled for now untill it support encoding win-1251
+    const isConfig = false
+    // ['.inf', '.att', '.descr', '.hi'].includes(ext)
+
     const isMesh =
       ['.act', '.actx', '.x', '.mesh'].includes(ext) ||
       /\.act\.\d+$/.test(filename) || // endsWith .ACT.#
@@ -57,8 +58,8 @@ async function compressMesh(
       `   Total files: ${allPaths.length}\n` +
       `   3d Mesh files: ${meshPaths.length}` +
       ` [${[...meshExtentions].join(' ')}]\n` +
-      `   Config files: ${configPaths.length}` +
-      ` [${[...configExtentions].join(' ')}]\n` +
+      // `   Config files: ${configPaths.length}` +
+      // ` [${[...configExtentions].join(' ')}]\n` +
       `   Other files: ${otherPaths.length}` +
       ` [${[...otherExtentions].join(' ')}]\n`
   )
